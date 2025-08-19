@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.IO.Compression;
 using System.Diagnostics;
+using Microsoft.Extensions.Configuration;
 
 namespace PulsePanel.Api.Services;
 
@@ -8,10 +9,12 @@ public class SteamCmdService {
     private readonly string _toolsDir;
     private readonly ILogger<SteamCmdService> _logger;
 
-    public SteamCmdService(IWebHostEnvironment env, ILogger<SteamCmdService> logger) {
-        _toolsDir = Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "tools", "steamcmd"));
-        Directory.CreateDirectory(_toolsDir);
+    public SteamCmdService(IWebHostEnvironment env, ILogger<SteamCmdService> logger, IConfiguration config) {
         _logger = logger;
+        var steamCmdRelativePath = config.GetValue<string>("PulsePanel:SteamCmdPath") ?? "steamcmd";
+        var rootDir = Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", ".."));
+        _toolsDir = Path.Combine(rootDir, steamCmdRelativePath);
+        Directory.CreateDirectory(_toolsDir);
     }
 
     public string SteamCmdPath {
