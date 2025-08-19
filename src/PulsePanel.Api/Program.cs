@@ -230,6 +230,36 @@ app.MapPut("/api/servers/{id}/config", async (string id, ServerStore store, Http
     return Results.Json(new { ok = true });
 });
 
+app.MapPost("/api/servers/{id}/config/generate", async (string id, ServerStore store, ServerRegistry reg, ServerProcessService procs) =>
+{
+    var list = store.Load();
+    var s = list.FirstOrDefault(x => x.Id == id);
+    if (s is null) return Results.NotFound();
+
+    var def = reg.Get(s.Game);
+    if (def is null) return Results.BadRequest(new { error = "unknown game id" });
+
+    var configDir = procs.ConfigDir(id);
+    procs.EnsureLayout(id);
+
+    if (def.Templates is not null)
+    {
+        foreach (var template in def.Templates)
+        {
+            var content = ReplaceTokens(template.Content, s.Tokens);
+            var targetPath = Path.Combine(configDir, template.Target);
+            await File.WriteAllTextAsync(targetPath, content);
+
+            if (targetPath.EndsWith(".sh") && !OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(targetPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+            }
+        }
+    }
+
+    return Results.Json(new { ok = true });
+});
+
 app.MapDelete("/api/servers/{id}", (string id, ServerStore store, ServerProcessService procs) =>
 {
     var list = store.Load();

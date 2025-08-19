@@ -22,6 +22,7 @@ async function refresh() {
       </div>
       <div class="row">
         <button data-act="install">Install/Update</button>
+        <button data-act="config">Generate Config</button>
         <button data-act="start">${s.status === "running" ? "Restart" : "Start"}</button>
         <button data-act="stop">Stop</button>
         <button data-act="logs">Logs</button>
@@ -33,6 +34,11 @@ async function refresh() {
     card.querySelector('[data-act="install"]').onclick = async ()=>{
       await api(`/api/servers/${s.id}/install`, { method: "POST" });
       await refresh();
+    };
+    card.querySelector('[data-act="config"]').onclick = async ()=>{
+      const res = await api(`/api/servers/${s.id}/config/generate`, { method: "POST" });
+      if (res.ok) alert("Config generated successfully!");
+      else alert("Failed to generate config.");
     };
     card.querySelector('[data-act="start"]').onclick = async ()=>{
       if (s.status === "running") {
