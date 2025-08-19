@@ -23,7 +23,12 @@
       },
       "defaultPorts": { "2456/udp": 2456, "2457/udp": 2457, "2458/udp": 2458 },
       "tokens": { "hostname": "Pulse Valheim", "world": "Dedicated", "password": "changeme", "port": 2456 },
-      "templates": []
+      "templates": [
+        {
+          "Target": "start.sh",
+          "Content": "#!/bin/bash\nexport TEMP=/tmp\n./valheim_server.x86_64 -name \"{{hostname}}\" -port {{port}} -world \"{{world}}\" -password \"{{password}}\" -public 1"
+        }
+      ]
     },
     {
       "id": "generic-steam",

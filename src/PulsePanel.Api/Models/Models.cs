@@ -20,8 +20,8 @@ public record GameDefinition(
 );
 
 public record TemplateSpec(
-    string Source,   // relative to registry templates folder or embedded later
-    string Target    // relative path under server config dir
+    string Target,
+    string Content
 );
 
 public class ServerEntry {
