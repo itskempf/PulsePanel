@@ -1,0 +1,31 @@
+body {
+    font-family: sans-serif;
+    line-height: 1.5;
+    font-size: 16px;
+    background-color: #f0f2f5;
+    color: #1c1e21;
+}
+
+/* High contrast and readable typeface will depend on final design,
+   but we can set a good foundation. */
+
+#root {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Basic styles for forms and buttons to ensure clarity */
+input, button {
+    font-size: 1rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+button {
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}

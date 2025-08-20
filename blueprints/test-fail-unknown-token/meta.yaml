@@ -1,0 +1,11 @@
+name: "test-fail-unknown-token"
+version: "1.0.0"
+description: "A test blueprint with an unknown token"
+author: "Test"
+license: "MIT"
+provenance:
+  source_url: "http://example.com"
+files: []
+tokens:
+  - key: "{{some.other.token}}"
+    description: "A valid token"

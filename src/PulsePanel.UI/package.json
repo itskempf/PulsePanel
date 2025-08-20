@@ -1,0 +1,13 @@
+{
+  "name": "pulsepanel-ui",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "scripts": {
+    "start": "echo 'Run the ASP.NET Core API to serve this UI'",
+    "build": "echo 'Build process would go here'"
+  }
+}

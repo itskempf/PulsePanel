@@ -1,0 +1,10 @@
+name: "test-fail-bad-hash"
+version: "1.0.0"
+description: "A test blueprint with a bad file hash"
+author: "Test"
+license: "MIT"
+provenance:
+  source_url: "http://example.com"
+files:
+  - path: "templates/dummy.txt"
+    hash: "sha256:incorrecthash12345"

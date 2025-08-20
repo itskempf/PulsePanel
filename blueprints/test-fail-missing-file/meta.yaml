@@ -1,0 +1,10 @@
+name: "test-fail-missing-file"
+version: "1.0.0"
+description: "A test blueprint with a missing file"
+author: "Test"
+license: "MIT"
+provenance:
+  source_url: "http://example.com"
+files:
+  - path: "templates/nonexistent.txt"
+    hash: "sha256:123"

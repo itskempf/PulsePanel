@@ -1,0 +1,9 @@
+name: "invalid-blueprint-test"
+version: "1.0.0"
+description: "A test blueprint"
+author: "Test"
+license: "MIT"
+provenance: { source_url: "http://example.com" }
+files:
+  - path: "templates/dummy.txt"
+    hash: "sha256:incorrecthash12345"
