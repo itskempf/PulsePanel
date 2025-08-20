@@ -17,13 +17,152 @@ builder.Services.AddSingleton<ServerStore>();
 builder.Services.AddSingleton<SteamCmdService>();
 builder.Services.AddSingleton<ServerProcessService>();
 
+var blueprintsRoot = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", "blueprints"));
+var cachePath = Path.GetFullPath(Path.Combine(builder.Environment.ContentRootPath, "..", "..", "data", "cache"));
+builder.Services.AddSingleton(new PulsePanel.Blueprints.BlueprintCatalog(blueprintsRoot, cachePath));
+builder.Services.AddSingleton<SettingsService>();
+
 builder.Services.AddRouting();
 builder.Services.AddDirectoryBrowser();
+builder.Services.AddSpaStaticFiles(config =>
+{
+    config.RootPath = "src/PulsePanel.UI";
+});
 
 var app = builder.Build();
 
 app.UseDefaultFiles();
 app.UseStaticFiles();
+app.UseSpaStaticFiles();
+
+app.MapPost("/api/blueprints/validate", async (HttpContext ctx, IWebHostEnvironment env) =>
+{
+    using var doc = await System.Text.Json.JsonDocument.ParseAsync(ctx.Request.Body);
+    if (!doc.RootElement.TryGetProperty("path", out var pathElement) || pathElement.ValueKind != System.Text.Json.JsonValueKind.String)
+    {
+        return Results.BadRequest(ApiResponse<object>.Fail("INVALID_REQUEST", "Missing or invalid 'path' in request body."));
+    }
+
+    var blueprintPath = pathElement.GetString()!;
+
+    var fullPath = Path.GetFullPath(blueprintPath);
+    if (!fullPath.StartsWith(blueprintsRoot))
+    {
+        return Results.BadRequest(ApiResponse<object>.Fail("FORBIDDEN_PATH", "Path is outside of the allowed blueprints directory."));
+    }
+
+    if (string.IsNullOrWhiteSpace(fullPath) || !Directory.Exists(fullPath))
+    {
+        return Results.NotFound(ApiResponse<object>.Fail("NOT_FOUND", $"Blueprint directory not found at path: {blueprintPath}"));
+    }
+
+    var settings = app.Services.GetRequiredService<SettingsService>();
+    var logPath = settings.GetSettings().ProvenanceLogPath;
+    var logger = new PulsePanel.Blueprints.ProvenanceLogger(logPath);
+    var validator = new PulsePanel.Blueprints.BlueprintValidator(logger);
+    var result = validator.Validate(fullPath);
+
+    if (!result.IsValid)
+    {
+        return Results.BadRequest(ApiResponse<object>.Fail("VALIDATION_FAILED", "Blueprint validation failed."));
+    }
+
+    return Results.Ok(ApiResponse<object>.Success(result));
+});
+
+app.MapPost("/api/blueprints/generate", async (HttpContext ctx, IWebHostEnvironment env) =>
+{
+    using var doc = await System.Text.Json.JsonDocument.ParseAsync(ctx.Request.Body);
+    var root = doc.RootElement;
+
+    if (!root.TryGetProperty("blueprintPath", out var pathElement) || pathElement.ValueKind != System.Text.Json.JsonValueKind.String)
+    {
+        return Results.BadRequest(ApiResponse<object>.Fail("INVALID_REQUEST", "Missing or invalid 'blueprintPath' in request body."));
+    }
+    var blueprintPath = pathElement.GetString()!;
+
+    if (!root.TryGetProperty("values", out var valuesElement) || valuesElement.ValueKind != System.Text.Json.JsonValueKind.Object)
+    {
+        return Results.BadRequest(ApiResponse<object>.Fail("INVALID_REQUEST", "Missing or invalid 'values' object in request body."));
+    }
+
+    var fullBlueprintPath = Path.GetFullPath(blueprintPath);
+    if (!fullBlueprintPath.StartsWith(blueprintsRoot))
+    {
+        return Results.BadRequest(ApiResponse<object>.Fail("FORBIDDEN_PATH", "Path is outside of the allowed blueprints directory."));
+    }
+    if (!Directory.Exists(fullBlueprintPath))
+    {
+        return Results.NotFound(ApiResponse<object>.Fail("NOT_FOUND", $"Blueprint directory not found at path: {blueprintPath}"));
+    }
+
+    var tempValuesPath = Path.GetTempFileName();
+    await using (var fileStream = File.Create(tempValuesPath))
+    {
+        await System.Text.Json.JsonSerializer.SerializeAsync(fileStream, valuesElement);
+    }
+
+    try
+    {
+        var settings = app.Services.GetRequiredService<SettingsService>();
+        var logPath = settings.GetSettings().ProvenanceLogPath;
+        var logger = new PulsePanel.Blueprints.ProvenanceLogger(logPath);
+        var generator = new PulsePanel.Blueprints.ConfigGenerator(logger);
+        var outputRoot = Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", "..", "output"));
+        var result = generator.Generate(fullBlueprintPath, tempValuesPath, outputRoot);
+
+        if (result.Success)
+        {
+            return Results.Ok(ApiResponse<object>.Success(new { outputPath = result.OutputPath }));
+        }
+        else
+        {
+            return Results.BadRequest(ApiResponse<object>.Fail("GENERATION_FAILED", "Configuration generation failed."));
+        }
+    }
+    finally
+    {
+        if (File.Exists(tempValuesPath))
+        {
+            File.Delete(tempValuesPath);
+        }
+    }
+});
+
+app.MapGet("/api/blueprints", (PulsePanel.Blueprints.BlueprintCatalog catalog) =>
+{
+    var entries = catalog.GetCatalog();
+    return Results.Ok(ApiResponse<object>.Success(entries));
+});
+
+app.MapGet("/api/blueprints/{name}", (string name, PulsePanel.Blueprints.BlueprintCatalog catalog) =>
+{
+    var blueprint = catalog.GetBlueprint(name);
+    if (blueprint == null)
+    {
+        return Results.NotFound(ApiResponse<object>.Fail("NOT_FOUND", $"Blueprint '{name}' not found."));
+    }
+    return Results.Ok(ApiResponse<object>.Success(blueprint));
+});
+
+app.MapGet("/api/settings", (SettingsService settings) =>
+{
+    var currentSettings = settings.GetSettings();
+    return Results.Ok(ApiResponse<object>.Success(currentSettings));
+});
+
+app.MapPut("/api/settings/storage", (PulsePanelSettings newSettings, SettingsService settings) =>
+{
+    try
+    {
+        settings.SaveSettings(newSettings);
+        return Results.Ok(ApiResponse<object>.Success(new { message = "Settings saved successfully." }));
+    }
+    catch (NotImplementedException)
+    {
+        return Results.StatusCode(501, ApiResponse<object>.Fail("NOT_IMPLEMENTED", "Saving settings is not supported in this version."));
+    }
+});
 
 app.MapGet("/api/games", (ServerRegistry reg) =>
 {
@@ -272,6 +411,12 @@ app.MapDelete("/api/servers/{id}", (string id, ServerStore store, ServerProcessS
     list.RemoveAll(x => x.Id == id);
     store.Save(list);
     return Results.Json(new { ok = true });
+});
+
+app.UseSpa(spa =>
+{
+    // In a real dev environment, you might use spa.UseReactDevelopmentServer(npmScript: "start");
+    // For our manual setup, we just let it serve index.html for any unknown paths.
 });
 
 app.Run();

@@ -1,0 +1,36 @@
+name: "minecraft-java-paper"
+version: "1.0.0"
+description: "Installs and configures a PaperMC Minecraft Java server"
+author: "PulsePanel"
+license: "MIT"
+provenance:
+  source_url: "https://papermc.io/downloads"
+  source_version: "1.21.1"
+  source_hash: "sha256:d41d8cd98f00b204e9800998ecf8427e00000000000000000000000000000000"
+  retrieval_date: "2025-08-20T20:30:00Z"
+  retrieval_method: "manual"
+files:
+  - path: "templates/server.properties"
+    hash: "sha256:d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592"
+requirements:
+  os: ["windows"]
+  dependencies:
+    - name: "Java"
+      version: ">=17"
+      install_instructions: "https://adoptium.net/"
+tokens:
+  - key: "{{server.name}}"
+    description: "Server name"
+    type: "string"
+    required: true
+    default: "My Server"
+  - key: "{{server.port}}"
+    description: "Listen port"
+    type: "int"
+    required: true
+    default: 25565
+  - key: "{{motd}}"
+    description: "Message of the day"
+    type: "string"
+    required: false
+    default: "Welcome!"
