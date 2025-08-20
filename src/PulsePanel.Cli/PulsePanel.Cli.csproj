@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PulsePanel.Blueprints\PulsePanel.Blueprints.csproj" />
     <ProjectReference Include="..\PulsePanel.Core\PulsePanel.Core.csproj" />
+  <ProjectReference Include="..\PulsePanel.Windows\PulsePanel.Windows.csproj" />
   </ItemGroup>
 
 </Project>
