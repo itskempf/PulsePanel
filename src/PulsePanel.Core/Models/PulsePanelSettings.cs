@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace PulsePanel.Api.Models;
+namespace PulsePanel.Core.Models;
 
 public class PulsePanelSettings
 {

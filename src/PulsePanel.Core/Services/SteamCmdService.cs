@@ -2,8 +2,10 @@ using System.Runtime.InteropServices;
 using System.IO.Compression;
 using System.Diagnostics;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace PulsePanel.Api.Services;
+namespace PulsePanel.Core.Services;
 
 public class SteamCmdService {
     private readonly string _toolsDir;

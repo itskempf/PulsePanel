@@ -1,4 +1,5 @@
 using PulsePanel.Blueprints;
+using PulsePanel.Windows;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -17,6 +18,8 @@ var jsonOptions = new JsonSerializerOptions
     DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
 };
 
+var logger = new ProvenanceLogger("d:\\PulsePanel\\data\\provenance\\log.jsonl");
+
 switch (command)
 {
     case "list-blueprints":
@@ -30,7 +33,7 @@ switch (command)
             PrintUsage();
             return 1;
         }
-        return await ValidateBlueprint(args[1], jsonOptions);
+        return await ValidateBlueprint(args[1], jsonOptions, logger);
 
     case "generate-config":
         if (args.Length < 3)
@@ -39,7 +42,49 @@ switch (command)
             PrintUsage();
             return 1;
         }
-        return await GenerateConfig(args[1], args[2]);
+        return await GenerateConfig(args[1], args[2], logger);
+
+    case "install-service":
+        return InstallService(logger);
+
+    case "remove-service":
+        return RemoveService(logger);
+
+    case "start-service":
+        return StartService(logger);
+
+    case "stop-service":
+        return StopService(logger);
+
+    case "firewall-add":
+        return AddFirewallRule(logger);
+
+    case "firewall-remove":
+        return RemoveFirewallRule(logger);
+
+    case "steamcmd-setup":
+        return SetupSteamCmd(logger);
+
+    case "steamcmd-verify":
+        return VerifySteamCmd(logger);
+
+    case "set-storage-path":
+        if (args.Length < 3)
+        {
+            Console.WriteLine("Error: Missing required arguments <key> and <path>");
+            PrintUsage();
+            return 1;
+        }
+        return SetStoragePath(args[1], args[2], logger);
+
+    case "get-storage-path":
+        if (args.Length < 2)
+        {
+            Console.WriteLine("Error: Missing required argument <key>");
+            PrintUsage();
+            return 1;
+        }
+        return GetStoragePath(args[1], logger);
 
     default:
         Console.WriteLine($"Error: Unknown command '{command}'");
@@ -56,6 +101,114 @@ static void PrintUsage()
     Console.WriteLine("  list-blueprints [--json]                Lists all available blueprints.");
     Console.WriteLine("  validate-blueprint <path>               Validates a blueprint directory.");
     Console.WriteLine("  generate-config <blueprintPath> <valuesFile>  Generates a configuration from a blueprint.");
+    Console.WriteLine("  install-service                         Installs the PulsePanel API as a Windows service.");
+    Console.WriteLine("  remove-service                          Removes the PulsePanel API Windows service.");
+    Console.WriteLine("  start-service                           Starts the PulsePanel API Windows service.");
+    Console.WriteLine("  stop-service                            Stops the PulsePanel API Windows service.");
+    Console.WriteLine("  firewall-add                            Adds a firewall rule for PulsePanel.");
+    Console.WriteLine("  firewall-remove                         Removes the firewall rule for PulsePanel.");
+    Console.WriteLine("  steamcmd-setup                          Downloads and installs SteamCMD.");
+    Console.WriteLine("  steamcmd-verify                         Verifies the SteamCMD installation.");
+    Console.WriteLine("  set-storage-path <key> <path>           Sets a storage path.");
+    Console.WriteLine("  get-storage-path <key>                  Gets a storage path.");
+}
+
+static int SetStoragePath(string key, string path, IProvenanceLogger logger)
+{
+    var storageManager = new StorageManager(logger);
+    storageManager.SetStoragePath(key, path);
+    Console.WriteLine($"Storage path '{key}' set to '{path}'.");
+    return 0;
+}
+
+static int GetStoragePath(string key, IProvenanceLogger logger)
+{
+    var storageManager = new StorageManager(logger);
+    var path = storageManager.GetStoragePath(key);
+    if (path != null)
+    {
+        Console.WriteLine($"Storage path '{key}': {path}");
+        return 0;
+    }
+    else
+    {
+        Console.WriteLine($"Storage path '{key}' not found.");
+        return 1;
+    }
+}
+
+static int SetupSteamCmd(IProvenanceLogger logger)
+{
+    var steamCmdManager = new SteamCmdManager(logger);
+    // In a real implementation, we would allow the user to specify the installation path.
+    steamCmdManager.SetupSteamCmd("d:\\PulsePanel\\steamcmd");
+    return 0;
+}
+
+static int VerifySteamCmd(IProvenanceLogger logger)
+{
+    var steamCmdManager = new SteamCmdManager(logger);
+    // In a real implementation, we would allow the user to specify the installation path.
+    if (steamCmdManager.VerifySteamCmd("d:\\PulsePanel\\steamcmd"))
+    {
+        Console.WriteLine("SteamCMD is installed and verified.");
+        return 0;
+    }
+    else
+    {
+        Console.WriteLine("SteamCMD is not installed or could not be verified.");
+        return 1;
+    }
+}
+
+static int AddFirewallRule(IProvenanceLogger logger)
+{
+    var firewallManager = new FirewallManager(logger);
+    // In a real implementation, we would get the rule name, protocol, and port from the blueprint.
+    firewallManager.AddFirewallRule("PulsePanel-Minecraft", "TCP", "25565");
+    Console.WriteLine("Firewall rule added successfully.");
+    return 0;
+}
+
+static int RemoveFirewallRule(IProvenanceLogger logger)
+{
+    var firewallManager = new FirewallManager(logger);
+    // In a real implementation, we would get the rule name from the blueprint.
+    firewallManager.RemoveFirewallRule("PulsePanel-Minecraft");
+    Console.WriteLine("Firewall rule removed successfully.");
+    return 0;
+}
+
+static int InstallService(IProvenanceLogger logger)
+{
+    var serviceManager = new WindowsServiceManager(logger);
+    serviceManager.InstallService();
+    Console.WriteLine("PulsePanel service installed successfully.");
+    return 0;
+}
+
+static int RemoveService(IProvenanceLogger logger)
+{
+    var serviceManager = new WindowsServiceManager(logger);
+    serviceManager.RemoveService();
+    Console.WriteLine("PulsePanel service removed successfully.");
+    return 0;
+}
+
+static int StartService(IProvenanceLogger logger)
+{
+    var serviceManager = new WindowsServiceManager(logger);
+    serviceManager.StartService();
+    Console.WriteLine("PulsePanel service started successfully.");
+    return 0;
+}
+
+static int StopService(IProvenanceLogger logger)
+{
+    var serviceManager = new WindowsServiceManager(logger);
+    serviceManager.StopService();
+    Console.WriteLine("PulsePanel service stopped successfully.");
+    return 0;
 }
 
 static async Task<int> ListBlueprints(bool useJson, JsonSerializerOptions options)
@@ -71,7 +224,7 @@ static async Task<int> ListBlueprints(bool useJson, JsonSerializerOptions option
     }
     else
     {
-        Console.WriteLine($"{"NAME",-30} {"VERSION",-15} {"DESCRIPTION"}");
+        Console.WriteLine($"{{"NAME",-30}} {{"VERSION",-15}} {"DESCRIPTION"}");
         Console.WriteLine(new string('-', 70));
         foreach (var entry in entries)
         {
@@ -82,7 +235,7 @@ static async Task<int> ListBlueprints(bool useJson, JsonSerializerOptions option
     return 0;
 }
 
-static async Task<int> ValidateBlueprint(string blueprintPath, JsonSerializerOptions options)
+static async Task<int> ValidateBlueprint(string blueprintPath, JsonSerializerOptions options, IProvenanceLogger logger)
 {
     if (!Directory.Exists(blueprintPath))
     {
@@ -90,15 +243,14 @@ static async Task<int> ValidateBlueprint(string blueprintPath, JsonSerializerOpt
         return 1;
     }
 
-    var logger = new ProvenanceLogger("./data/provenance/log.jsonl");
     var validator = new BlueprintValidator(logger);
     var result = validator.Validate(blueprintPath);
 
     var output = new
     {
-        result.Status,
-        result.Errors,
-        result.Warnings,
+        Status = result.Status,
+        Errors = result.Errors,
+        Warnings = result.Warnings,
         Blueprint = result.Blueprint != null ? new { result.Blueprint.Name, result.Blueprint.Version } : null
     };
 
@@ -106,7 +258,7 @@ static async Task<int> ValidateBlueprint(string blueprintPath, JsonSerializerOpt
     return result.IsValid ? 0 : 1;
 }
 
-static async Task<int> GenerateConfig(string blueprintPath, string valuesFile)
+static async Task<int> GenerateConfig(string blueprintPath, string valuesFile, IProvenanceLogger logger)
 {
     if (!Directory.Exists(blueprintPath))
     {
@@ -119,7 +271,6 @@ static async Task<int> GenerateConfig(string blueprintPath, string valuesFile)
         return 1;
     }
 
-    var logger = new ProvenanceLogger("./data/provenance/log.jsonl");
     var generator = new ConfigGenerator(logger);
     var outputRoot = Path.Combine(Directory.GetCurrentDirectory(), "output");
     var result = generator.Generate(blueprintPath, valuesFile, outputRoot);

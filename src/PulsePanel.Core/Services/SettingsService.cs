@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Configuration;
-using PulsePanel.Api.Models;
+using PulsePanel.Core.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace PulsePanel.Api.Services;
+namespace PulsePanel.Core.Services;
 
 public class SettingsService
 {

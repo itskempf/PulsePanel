@@ -1,0 +1,18 @@
+{
+  "phase": 1,
+  "summary": "Remove legacy web UI and static assets.",
+  "files_removed": [
+    {
+      "path": "src/PulsePanel.UI/",
+      "reason": "Legacy web UI components. Replaced by native UI."
+    },
+    {
+      "path": "src/PulsePanel.Api/wwwroot/",
+      "reason": "Static assets for legacy web UI. No longer needed."
+    },
+    {
+      "path": "docs/api.md",
+      "reason": "Documentation for the legacy web API. Obsolete."
+    }
+  ]
+}
