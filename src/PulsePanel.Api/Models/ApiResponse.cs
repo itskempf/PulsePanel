@@ -5,7 +5,7 @@ namespace PulsePanel.Api.Models;
 public class ApiResponse<T>
 {
     [JsonPropertyName("status")]
-    public string Status { get; set; }
+    public string Status { get; set; } = string.Empty;
 
     [JsonPropertyName("data")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]

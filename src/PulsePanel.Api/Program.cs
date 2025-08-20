@@ -160,7 +160,7 @@ app.MapPut("/api/settings/storage", (PulsePanelSettings newSettings, SettingsSer
     }
     catch (NotImplementedException)
     {
-        return Results.StatusCode(501, ApiResponse<object>.Fail("NOT_IMPLEMENTED", "Saving settings is not supported in this version."));
+        return Results.Json(ApiResponse<object>.Fail("NOT_IMPLEMENTED", "Saving settings is not supported in this version."), statusCode: 501);
     }
 });
 
