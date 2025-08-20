@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.Text;
-using PulsePanel.Api.Models;
+using PulsePanel.Core.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace PulsePanel.Api.Services;
+namespace PulsePanel.Core.Services;
 
 public class ServerProcessService {
     private readonly IWebHostEnvironment _env;
