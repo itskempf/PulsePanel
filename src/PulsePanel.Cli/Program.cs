@@ -1,5 +1,5 @@
 using PulsePanel.Blueprints;
-using PulsePanel.Windows;
+using PulsePanel.Cli;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -9,6 +9,8 @@ if (args.Length < 1)
     PrintUsage();
     return 1;
 }
+
+// stubs moved to CliStubs.cs
 
 var command = args[0];
 var jsonOptions = new JsonSerializerOptions
@@ -224,7 +226,7 @@ static async Task<int> ListBlueprints(bool useJson, JsonSerializerOptions option
     }
     else
     {
-        Console.WriteLine($"{{"NAME",-30}} {{"VERSION",-15}} {"DESCRIPTION"}");
+        Console.WriteLine("{0,-30} {1,-15} {2}", "NAME", "VERSION", "DESCRIPTION");
         Console.WriteLine(new string('-', 70));
         foreach (var entry in entries)
         {
@@ -251,7 +253,7 @@ static async Task<int> ValidateBlueprint(string blueprintPath, JsonSerializerOpt
         Status = result.Status,
         Errors = result.Errors,
         Warnings = result.Warnings,
-        Blueprint = result.Blueprint != null ? new { result.Blueprint.Name, result.Blueprint.Version } : null
+        Blueprint = result.Blueprint != null ? new { Name = result.Blueprint.Name, Version = result.Blueprint.Version } : null
     };
 
     Console.WriteLine(JsonSerializer.Serialize(output, options));
