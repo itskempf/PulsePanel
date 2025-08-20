@@ -1,6 +1,6 @@
 # PulsePanel
 
-PulsePanel is a deterministic, provenance-first server management panel, starting with game servers. This project provides the core backend API, a command-line interface (CLI), and a minimal web UI for managing server configurations through a powerful blueprinting system.
+PulsePanel is a server management panel currently transitioning from a web-based tool to a Windows-native application. This project aims to provide robust server management capabilities through a powerful blueprinting system, with a focus on a native desktop experience.
 
 ## Key Features
 
@@ -10,40 +10,14 @@ PulsePanel is a deterministic, provenance-first server management panel, startin
 -   **Provenance Logging:** Every key action (validation, generation) is logged to a JSONL file for audit and traceability.
 -   **Extensible:** Designed to be extended with new blueprint types and integrations.
 
-## Getting Started (Linux Development)
+## Project Status
 
-This project is built on .NET 8.
+This project is currently undergoing a significant refactoring effort to transition from a web-based application to a standalone Windows-native desktop application (WinUI 3 / WPF). The web UI and API components are being removed, and core logic is being extracted into shared libraries.
 
-### Running the API
-
-The main backend API can be run from the `src/PulsePanel.Api` directory. Assuming you have the .NET 8 SDK installed:
-
-```bash
-# From the repository root
-cd src/PulsePanel.Api
-dotnet run
-```
-
-The API will start, and by default, it will also serve the static Web UI. You can access the UI at `http://localhost:8070` (or the configured port).
-
-### Using the CLI
-
-The CLI provides command-line access to the core blueprint features.
-
-```bash
-# From the repository root
-# (Build the CLI first if you haven't)
-dotnet build src/PulsePanel.Cli
-
-# Example: Validate a blueprint
-./src/PulsePanel.Cli/bin/Debug/net8.0/pulsepanel validate-blueprint blueprints/minecraft-java-paper
-
-# Example: List all blueprints
-./src/PulsePanel.Cli/bin/Debug/net8.0/pulsepanel list-blueprints
-```
+**Current State:**
+The project is in an active development phase. The build currently has errors as part of this transition.
 
 ## Documentation
 
 -   **[Blueprint Schema](./docs/blueprint-schema.md):** The canonical specification for `meta.yaml` files.
 -   **[Provenance Schema](./docs/provenance-schema.md):** The structure of the JSONL audit logs.
--   **[API Documentation](./docs/api.md):** Details on the available REST API endpoints.
