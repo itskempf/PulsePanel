@@ -6,16 +6,28 @@ using System.Text;
 using System.Text.Json;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using PulsePanel.Core.Services;
+using System.Threading.Tasks;
+using PulsePanel.Core.Models;
+using PulsePanel.Blueprints;
+using PulsePanel.Blueprints.Provenance;
 
-namespace PulsePanel.Blueprints;
+namespace PulsePanel.Core.Services;
 
-public class ConfigGenerator
+public class ConfigGenerator : IConfigGenerator
 {
     private readonly IProvenanceLogger? _logger;
+    private readonly IBlueprintValidator _validator;
 
-    public ConfigGenerator(IProvenanceLogger? logger = null)
+    public ConfigGenerator(IProvenanceLogger? logger = null, IBlueprintValidator? validator = null)
     {
         _logger = logger;
+        _validator = validator ?? new BlueprintValidator(logger);
+    }
+
+    public Task<GenerationResult> GenerateAsync(string blueprintPath, string valuesPath, string outputRoot)
+    {
+        return Task.FromResult(Generate(blueprintPath, valuesPath, outputRoot));
     }
 
     public GenerationResult Generate(string blueprintPath, string valuesPath, string outputRoot)
@@ -23,8 +35,7 @@ public class ConfigGenerator
         var result = new GenerationResult();
 
         // 1. Validate the blueprint first
-        var validator = new BlueprintValidator(_logger);
-        var validationResult = validator.Validate(blueprintPath);
+        var validationResult = ((BlueprintValidator)_validator).Validate(blueprintPath);
         if (!validationResult.IsValid)
         {
             result.Errors.Add("Blueprint is not valid. Please run 'validate-blueprint' for details.");
@@ -46,7 +57,7 @@ public class ConfigGenerator
         {
             values = LoadValues(valuesPath, valuesContent);
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
             result.Errors.Add($"Failed to parse values file '{valuesPath}'. Error: {ex.Message}");
             return result;
@@ -91,17 +102,17 @@ public class ConfigGenerator
 
         if (_logger != null)
         {
-            var logEntry = new Provenance.LogEntry
+            var logEntry = new LogEntry
             {
                 Action = "generate",
-                Blueprint = new Provenance.BlueprintInfo { Name = blueprint.Name, Version = blueprint.Version },
-                Inputs = new Provenance.InputsInfo { MetaPath = validationResult.Blueprint!.Provenance.SourceUrl, ValuesHash = $"sha256:{valuesHash}" },
-                Results = new Provenance.ResultsInfo { Status = "pass" },
-                Artifacts = new Provenance.ArtifactsInfo
+                Blueprint = new BlueprintInfo { Name = blueprint.Name, Version = blueprint.Version },
+                Inputs = new InputsInfo { MetaPath = validationResult.Blueprint!.Provenance.SourceUrl, ValuesHash = $"sha256:{valuesHash}" },
+                Results = new ResultsInfo { Status = "pass" },
+                Artifacts = new ArtifactsInfo
                 {
-                    Outputs = result.GeneratedFileHashes.Select(kvp => new Provenance.ArtifactDetail { Path = kvp.Key, Hash = $"sha256:{kvp.Value}" }).ToList()
+                    Outputs = result.GeneratedFileHashes.Select(kvp => new ArtifactDetail { Path = kvp.Key, Hash = $"sha256:{kvp.Value}" }).ToList()
                 },
-                License = new Provenance.LicenseInfo { Id = blueprint.License, Compatible = validationResult.LicenseCheckResult == "OK" }
+                License = new LicenseInfo { Id = blueprint.License, Compatible = validationResult.LicenseCheckResult == "OK" }
             };
             _logger.Log(logEntry);
         }
@@ -127,7 +138,7 @@ public class ConfigGenerator
             return JsonSerializer.Deserialize<Dictionary<string, object>>(jsonOutput)!;
         }
 
-        throw new NotSupportedException($"Unsupported values file format: {extension}");
+        throw new System.NotSupportedException($"Unsupported values file format: {extension}");
     }
 
     private string ComputeSha256(string input)
@@ -135,14 +146,6 @@ public class ConfigGenerator
         using var sha256 = SHA256.Create();
         var bytes = Encoding.UTF8.GetBytes(input);
         var hashBytes = sha256.ComputeHash(bytes);
-        return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        return System.BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
     }
-}
-
-public class GenerationResult
-{
-    public bool Success { get; set; }
-    public string? OutputPath { get; set; }
-    public List<string> Errors { get; set; } = new();
-    public Dictionary<string, string> GeneratedFileHashes { get; set; } = new();
 }

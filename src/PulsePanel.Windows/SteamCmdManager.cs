@@ -1,10 +1,11 @@
 using PulsePanel.Blueprints.Provenance;
+using PulsePanel.Core.Services;
 using System;
 using System.Threading.Tasks;
 
 namespace PulsePanel.Windows
 {
-    public class SteamCmdManager
+    public class SteamCmdManager : ISteamCmdManager
     {
         private readonly IProvenanceLogger _logger;
 

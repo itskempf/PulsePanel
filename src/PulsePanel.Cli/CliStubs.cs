@@ -1,4 +1,5 @@
 using PulsePanel.Blueprints;
+using PulsePanel.Core.Services;
 using System.Collections.Generic;
 
 namespace PulsePanel.Cli

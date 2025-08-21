@@ -7,10 +7,14 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
 using System.Collections.Generic;
+using PulsePanel.Core.Services;
+using System.Threading.Tasks;
+using PulsePanel.Blueprints;
+using PulsePanel.Blueprints.Provenance;
 
-namespace PulsePanel.Blueprints;
+namespace PulsePanel.Core.Services;
 
-public class BlueprintValidator
+public class BlueprintValidator : IBlueprintValidator
 {
     private readonly IProvenanceLogger? _logger;
 
@@ -23,6 +27,11 @@ public class BlueprintValidator
     public BlueprintValidator(IProvenanceLogger? logger = null)
     {
         _logger = logger;
+    }
+
+    public Task<ValidationResult> ValidateBlueprintAsync(string blueprintPath)
+    {
+        return Task.FromResult(Validate(blueprintPath));
     }
 
     public ValidationResult Validate(string blueprintPath)
@@ -53,7 +62,7 @@ public class BlueprintValidator
             }
             result.Blueprint = blueprint;
         }
-        catch (Exception ex)
+        catch (System.Exception ex)
         {
             result.Errors.Add($"Blueprint validation failed: Failed to parse 'meta.yaml'. Error: {ex.Message}");
             return result;
@@ -127,7 +136,7 @@ public class BlueprintValidator
                 var expectedHash = hashParts[1];
 
                 var actualHash = ComputeSha256(filePath);
-                if (!actualHash.Equals(expectedHash, StringComparison.OrdinalIgnoreCase))
+                if (!actualHash.Equals(expectedHash, System.StringComparison.OrdinalIgnoreCase))
                 {
                     result.Errors.Add($"Hash mismatch for file '{fileEntry.Path}'. Expected '{expectedHash}', but got '{actualHash}'.");
                 }
@@ -176,18 +185,18 @@ public class BlueprintValidator
 
         if (_logger != null && result.Blueprint != null)
         {
-            var logEntry = new Provenance.LogEntry
+            var logEntry = new LogEntry
             {
                 Action = "validate",
-                Blueprint = new Provenance.BlueprintInfo { Name = result.Blueprint.Name, Version = result.Blueprint.Version },
-                Inputs = new Provenance.InputsInfo { MetaPath = metaYamlPath },
-                Results = new Provenance.ResultsInfo
+                Blueprint = new BlueprintInfo { Name = result.Blueprint.Name, Version = result.Blueprint.Version },
+                Inputs = new InputsInfo { MetaPath = metaYamlPath },
+                Results = new ResultsInfo
                 {
                     Status = result.Status,
-                    Errors = result.Errors.Select(e => new Provenance.ResultDetail { Code = "VALIDATION_ERROR", Message = e }).ToList(),
-                    Warnings = result.Warnings.Select(w => new Provenance.ResultDetail { Code = "VALIDATION_WARNING", Message = w }).ToList(),
+                    Errors = result.Errors.Select(e => new ResultDetail { Code = "VALIDATION_ERROR", Message = e }).ToList(),
+                    Warnings = result.Warnings.Select(w => new ResultDetail { Code = "VALIDATION_WARNING", Message = w }).ToList(),
                 },
-                License = new Provenance.LicenseInfo { Id = result.Blueprint.License, Compatible = result.LicenseCheckResult == "OK" }
+                License = new LicenseInfo { Id = result.Blueprint.License, Compatible = result.LicenseCheckResult == "OK" }
             };
             _logger.Log(logEntry);
         }
@@ -200,6 +209,6 @@ public class BlueprintValidator
         using var sha256 = SHA256.Create();
         using var stream = File.OpenRead(filePath);
         var hashBytes = sha256.ComputeHash(stream);
-        return BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
+        return System.BitConverter.ToString(hashBytes).Replace("-", "").ToLowerInvariant();
     }
 }

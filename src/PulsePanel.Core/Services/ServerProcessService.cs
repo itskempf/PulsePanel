@@ -1,19 +1,19 @@
 using System.Diagnostics;
 using System.Text;
 using PulsePanel.Core.Models;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging;
+using PulsePanel.Core.Services;
+using System;
+using System.IO;
 
 namespace PulsePanel.Core.Services;
 
 public class ServerProcessService {
-    private readonly IWebHostEnvironment _env;
-    private readonly ILogger<ServerProcessService> _logger;
-    public ServerProcessService(IWebHostEnvironment env, ILogger<ServerProcessService> logger) {
-        _env = env; _logger = logger;
+    private readonly IProvenanceLogger _logger;
+    public ServerProcessService(IProvenanceLogger logger) {
+        _logger = logger;
     }
 
-    private string ServersRoot => Path.GetFullPath(Path.Combine(_env.ContentRootPath, "..", "..", "servers"));
+    private string ServersRoot => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "servers"));
 
     public string GetServerDir(string id) => Path.Combine(ServersRoot, id);
     public string FilesDir(string id) => Path.Combine(GetServerDir(id), "files");
