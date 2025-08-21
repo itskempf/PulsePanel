@@ -11,7 +11,7 @@ provenance:
   retrieval_method: "manual"
 files:
   - path: "templates/server.properties"
-    hash: "sha256:d7a8fbb307d7809469ca9abcb0082e4f8d5651e46d3cdb762d02d0bf37c9e592"
+    hash: "sha256:ca5ade3b13385acb86d8bdcfd9192761ec0e7b93ecf65c9aab02d80a1dd5c6e5"
 requirements:
   os: ["windows"]
   dependencies:

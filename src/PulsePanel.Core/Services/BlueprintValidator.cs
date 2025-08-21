@@ -47,7 +47,7 @@ public class BlueprintValidator : IBlueprintValidator
         }
 
         var deserializer = new DeserializerBuilder()
-            .WithNamingConvention(CamelCaseNamingConvention.Instance)
+            .WithNamingConvention(UnderscoredNamingConvention.Instance)
             .Build();
 
         Blueprint blueprint;
@@ -146,7 +146,7 @@ public class BlueprintValidator : IBlueprintValidator
         if (result.Errors.Count > 0) return result;
 
         // 4. Validate tokens
-        var definedTokens = blueprint.Tokens?.Select(t => t.Key).ToHashSet() ?? new HashSet<string>();
+        var definedTokens = blueprint.Tokens?.Select(t => t.Key.Trim(new char[] { '{', '}' })).ToHashSet() ?? new HashSet<string>();
         var usedTokens = new HashSet<string>();
         var templatesPath = Path.Combine(blueprintPath, "templates");
 

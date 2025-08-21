@@ -17,7 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\PulsePanel.Blueprints\PulsePanel.Blueprints.csproj" />
+    
+    <ProjectReference Include="..\PulsePanel.Core\PulsePanel.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\blueprints\**\*">
+      <Link>blueprints\%(RecursiveDir)%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>

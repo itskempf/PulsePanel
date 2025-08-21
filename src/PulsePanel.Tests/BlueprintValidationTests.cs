@@ -1,6 +1,7 @@
 using PulsePanel.Blueprints;
 using Xunit;
 using System.IO;
+using PulsePanel.Core.Services;
 
 namespace PulsePanel.Tests;
 
