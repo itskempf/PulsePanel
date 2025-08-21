@@ -1,11 +1,12 @@
-using PulsePanel.Blueprints.Models;
+using PulsePanel.Core.Models;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
+using PulsePanel.Blueprints.Models;
 
-namespace PulsePanel.Blueprints;
+namespace PulsePanel.Core;
 
 public class BlueprintCatalog
 {

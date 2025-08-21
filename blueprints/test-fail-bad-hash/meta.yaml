@@ -5,6 +5,7 @@ author: "Test"
 license: "MIT"
 provenance:
   source_url: "http://example.com"
+  source_hash: "dummy"
 files:
   - path: "templates/dummy.txt"
     hash: "sha256:incorrecthash12345"

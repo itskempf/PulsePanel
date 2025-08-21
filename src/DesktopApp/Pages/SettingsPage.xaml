@@ -1,0 +1,22 @@
+<Page
+    x:Class="PulsePanel.DesktopApp.Pages.SettingsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="Settings" FontSize="48"/>
+            <ToggleSwitch Header="High Contrast"/>
+            <ComboBox Header="Font">
+                <x:String>Default</x:String>
+                <x:String>Arial</x:String>
+                <x:String>Verdana</x:String>
+                <x:String>OpenDyslexic</x:String>
+            </ComboBox>
+            <TextBlock Text="The quick brown fox jumps over the lazy dog." FontSize="24" Margin="0,20,0,0"/>
+        </StackPanel>
+    </Grid>
+</Page>

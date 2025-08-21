@@ -6,9 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\PulsePanel.Blueprints\PulsePanel.Blueprints.csproj" />
-  </ItemGroup>
+  
 
   <ItemGroup>
     <PackageReference Include="YamlDotNet" Version="15.1.2" />
