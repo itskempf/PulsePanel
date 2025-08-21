@@ -1,5 +1,5 @@
 
-<img width="1024" height="1024" alt="BCO 45cd2bf0-c155-4721-8423-a638bad6ef49" src="https://github.com/user-attachments/assets/f61adebc-176b-4f55-8d2a-f34786e61731" />
+<img width="864" height="208" alt="BCO 45cd2bf0-c155-4721-8423-a638bad6ef49" src="https://github.com/user-attachments/assets/87f14098-f4d0-41f5-882f-db1063f3032f" />
 
 # PulsePanel
 
