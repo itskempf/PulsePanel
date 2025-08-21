@@ -1,10 +1,10 @@
-using PulsePanel.Blueprints;
 using PulsePanel.Blueprints.Provenance;
+using PulsePanel.Core.Services;
 using System.Diagnostics;
 
 namespace PulsePanel.Windows
 {
-    public class FirewallManager
+    public class FirewallManager : IFirewallManager
     {
         private readonly IProvenanceLogger _logger;
 

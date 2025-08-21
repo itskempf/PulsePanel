@@ -1,10 +1,11 @@
 using PulsePanel.Blueprints.Provenance;
+using PulsePanel.Core.Services;
 using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace PulsePanel.Blueprints;
+namespace PulsePanel.Core.Services;
 
 public class ProvenanceLogger : IProvenanceLogger
 {

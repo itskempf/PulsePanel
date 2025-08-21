@@ -1,26 +1,18 @@
-using Microsoft.Extensions.Configuration;
 using PulsePanel.Core.Models;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace PulsePanel.Core.Services;
 
 public class SettingsService
 {
-    private readonly IConfiguration _config;
-
-    public SettingsService(IConfiguration config)
+    public SettingsService()
     {
-        _config = config;
     }
 
     public PulsePanelSettings GetSettings()
     {
-        // The IConfiguration object automatically handles layering of appsettings.json, environment variables, etc.
-        // We just need to bind the section to our model.
-        var settings = new PulsePanelSettings();
-        _config.GetSection("PulsePanel").Bind(settings);
-        return settings;
+        // For now, return a default settings object.
+        // A full implementation would read from a user-specific settings file.
+        return new PulsePanelSettings();
     }
 
     public void SaveSettings(PulsePanelSettings settings)
@@ -28,6 +20,7 @@ public class SettingsService
         // Note: Persisting settings back to a file is complex and has security implications.
         // For this sprint, we will not implement the save functionality.
         // A full implementation would likely write to a user-specific override file.
-        throw new NotImplementedException("Saving settings is not supported in this version.");
+        throw new System.NotImplementedException("Saving settings is not supported in this version.");
     }
 }
+

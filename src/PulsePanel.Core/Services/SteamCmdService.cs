@@ -1,20 +1,24 @@
 using System.Runtime.InteropServices;
 using System.IO.Compression;
 using System.Diagnostics;
-using Microsoft.Extensions.Configuration;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Logging;
+using System.Net.Http;
+using System.Threading.Tasks;
+using System.Threading;
+using System;
+using PulsePanel.Core.Models;
+using PulsePanel.Core.Services;
 
 namespace PulsePanel.Core.Services;
 
 public class SteamCmdService {
     private readonly string _toolsDir;
-    private readonly ILogger<SteamCmdService> _logger;
+    private readonly IProvenanceLogger _logger;
 
-    public SteamCmdService(IWebHostEnvironment env, ILogger<SteamCmdService> logger, IConfiguration config) {
+    public SteamCmdService(IProvenanceLogger logger, SettingsService settingsService) {
         _logger = logger;
-        var steamCmdRelativePath = config.GetValue<string>("PulsePanel:SteamCmdPath") ?? "steamcmd";
-        var rootDir = Path.GetFullPath(Path.Combine(env.ContentRootPath, "..", ".."));
+        var settings = settingsService.GetSettings();
+        var steamCmdRelativePath = settings.SteamCmdPath ?? "steamcmd";
+        var rootDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", ".."));
         _toolsDir = Path.Combine(rootDir, steamCmdRelativePath);
         Directory.CreateDirectory(_toolsDir);
     }
@@ -53,8 +57,8 @@ public class SteamCmdService {
         await EnsurePresentAsync(ct);
         Directory.CreateDirectory(installDir);
         string args = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? $"+login anonymous +force_install_dir \"{installDir}\" +app_update {appId} {(validate? "validate":"")} +quit"
-            : $"+login anonymous +force_install_dir \"{installDir}\" +app_update {appId} {(validate? "validate":"")} +quit";
+            ? $"+login anonymous +force_install_dir \"{installDir}\" +app_update {appId} {(validate ? "validate" : "")} +quit"
+            : $"+login anonymous +force_install_dir \"{installDir}\" +app_update {appId} {(validate ? "validate" : "")} +quit";
 
         var psi = new ProcessStartInfo {
             FileName = SteamCmdPath,
@@ -67,8 +71,8 @@ public class SteamCmdService {
         };
         using var p = Process.Start(psi)!;
         await Task.WhenAll(
-            Task.Run(async () => { while (!p.HasExited) { _logger.LogInformation(await p.StandardOutput.ReadLineAsync() ?? ""); } }),
-            Task.Run(async () => { while (!p.HasExited) { _logger.LogWarning(await p.StandardError.ReadLineAsync() ?? ""); } })
+            Task.Run(async () => { while (!p.HasExited) { await p.StandardOutput.ReadLineAsync(ct); } }),
+            Task.Run(async () => { while (!p.HasExited) { await p.StandardError.ReadLineAsync(ct); } })
         );
         await p.WaitForExitAsync(ct);
         return p.ExitCode;
@@ -87,9 +91,6 @@ public class SteamCmdService {
     }
 }
 
-/// <summary>
-/// Minimal tar reader for .tar.gz extraction (Linux/macOS).
-/// </summary>
 public sealed class TarReader : IDisposable {
     private readonly Stream _stream;
     public TarReader(Stream stream) => _stream = stream;
@@ -116,11 +117,9 @@ public sealed class TarReader : IDisposable {
             } else if (header[156] == (byte)'0' || header[156] == 0) {
                 using var fs = new FileStream(target, FileMode.Create, FileAccess.Write);
                 CopyN(_stream, fs, size);
-                // align to 512
                 long rem = size % 512;
                 if (rem != 0) _stream.Position += (512 - rem);
             } else {
-                // skip other types
                 _stream.Position += size;
                 long rem = size % 512;
                 if (rem != 0) _stream.Position += (512 - rem);

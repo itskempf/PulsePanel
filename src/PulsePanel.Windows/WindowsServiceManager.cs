@@ -1,9 +1,10 @@
 using PulsePanel.Blueprints.Provenance;
+using PulsePanel.Core.Services;
 using System;
 
 namespace PulsePanel.Windows
 {
-    public class WindowsServiceManager
+    public class WindowsServiceManager : IWindowsServiceManager
     {
         private readonly IProvenanceLogger _logger;
 

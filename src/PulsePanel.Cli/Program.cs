@@ -1,5 +1,6 @@
 using PulsePanel.Blueprints;
 using PulsePanel.Cli;
+using PulsePanel.Core.Services;
 using System;
 using System.IO;
 using System.Text.Json;
