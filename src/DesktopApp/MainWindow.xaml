@@ -14,6 +14,7 @@
         </NavigationView.MenuItems>
 
         <NavigationView.FooterMenuItems>
+            <NavigationViewItem Content="Plugins" Tag="PulsePanel.DesktopApp.Pages.PluginsPage" Icon="Code"/>
             <NavigationViewItem Content="Settings" Tag="PulsePanel.DesktopApp.Pages.SettingsPage" Icon="Setting"/>
         </NavigationView.FooterMenuItems>
 

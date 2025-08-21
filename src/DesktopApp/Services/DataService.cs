@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
 using PulsePanel.Core.Models;
-using PulsePanel.Blueprints.Models;
+using PulsePanel.Core;
+using PulsePanel.Core.Services;
 
 namespace PulsePanel.DesktopApp.Services
 {
@@ -16,14 +18,12 @@ namespace PulsePanel.DesktopApp.Services
             };
         }
 
-        public List<Blueprint> GetMockBlueprints()
+        public List<PulsePanel.Core.Models.BlueprintCatalogEntry> GetBlueprints()
         {
-            return new List<Blueprint>
-            {
-                new Blueprint { Name = "Minecraft Java Paper", Version = "1.0.0", Description = "Installs and configures a PaperMC Minecraft Java server" },
-                new Blueprint { Name = "Valheim Dedicated Server", Version = "1.0.0", Description = "Installs and configures a Valheim dedicated server" },
-                new Blueprint { Name = "ARK Survival Evolved", Version = "1.0.0", Description = "Installs and configures an ARK Survival Evolved server" }
-            };
+            var blueprintsRoot = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "blueprints");
+            var cachePath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "data", "cache");
+            var catalog = new BlueprintCatalog(blueprintsRoot, cachePath);
+            return catalog.GetCatalog().ToList();
         }
     }
 
