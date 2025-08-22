@@ -1,6 +1,5 @@
 
-<img width="864" height="208" alt="BCO 45cd2bf0-c155-4721-8423-a638bad6ef49" src="https://github.com/user-attachments/assets/87f14098-f4d0-41f5-882f-db1063f3032f" />
-
+<img width="935" height="227" alt="BCO 45cd2bf0-c155-4721-8423-a638bad6ef49" src="https://github.com/user-attachments/assets/e26c0986-0ec8-4ee8-91ca-28461fc3f44d" />
 # PulsePanel
 
 PulsePanel is a server management panel currently transitioning from a web-based tool to a Windows-native application. This project aims to provide robust server management capabilities through a powerful blueprinting system, with a focus on a native desktop experience.
