@@ -51,7 +51,7 @@ public class SchedulerService
     {
         if (HasConflictingSchedule(server, options))
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Schedule_Restart_Conflict",
                 EntityType = "Server",
@@ -64,7 +64,7 @@ public class SchedulerService
         var success = await CreateOrUpdateWindowsTask(server, options);
         if (success)
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Schedule_Restart_Created",
                 EntityType = "Server",
@@ -74,7 +74,7 @@ public class SchedulerService
         }
         else
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Schedule_Restart_Failed",
                 EntityType = "Server",
@@ -89,7 +89,7 @@ public class SchedulerService
     {
         if (HasConflictingSchedule(server, options))
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Schedule_Update_Conflict",
                 EntityType = "Server",
@@ -102,7 +102,7 @@ public class SchedulerService
         var success = await CreateOrUpdateWindowsTask(server, options);
         if (success)
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Schedule_Update_Created",
                 EntityType = "Server",
@@ -112,7 +112,7 @@ public class SchedulerService
         }
         else
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Schedule_Update_Failed",
                 EntityType = "Server",
@@ -128,7 +128,7 @@ public class SchedulerService
         var options = new ScheduleOptions(ScheduledTaskType.StartOnLogin, "OnLogin", DelayMinutes: 5); // Dummy delay
         if (HasConflictingSchedule(server, options))
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Schedule_StartOnLogin_Conflict",
                 EntityType = "Server",
@@ -141,7 +141,7 @@ public class SchedulerService
         var success = await CreateOrUpdateWindowsTask(server, options);
         if (success)
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Schedule_StartOnLogin_Created",
                 EntityType = "Server",
@@ -151,7 +151,7 @@ public class SchedulerService
         }
         else
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Schedule_StartOnLogin_Failed",
                 EntityType = "Server",
@@ -167,7 +167,7 @@ public class SchedulerService
         var success = await DeleteWindowsTask(server, type);
         if (success)
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Schedule_Removed",
                 EntityType = "Server",
@@ -177,7 +177,7 @@ public class SchedulerService
         }
         else
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Schedule_Remove_Failed",
                 EntityType = "Server",

@@ -27,7 +27,7 @@ public class PnccLChecker
             RuleId = "PNCCL-BP-001"
         });
 
-        await _provenanceLogger.LogAsync(new LogEntry
+        _provenanceLogger.Log(new LogEntry
         {
             Action = "PNCCL_Check_Blueprint",
             EntityType = "Blueprint",
@@ -56,7 +56,7 @@ public class PnccLChecker
             RuleId = "PNCCL-PL-001"
         });
 
-        await _provenanceLogger.LogAsync(new LogEntry
+        _provenanceLogger.Log(new LogEntry
         {
             Action = "PNCCL_Check_Plugin",
             EntityType = "Plugin",
@@ -85,7 +85,7 @@ public class PnccLChecker
             RuleId = "PNCCL-CF-001"
         });
 
-        await _provenanceLogger.LogAsync(new LogEntry
+        _provenanceLogger.Log(new LogEntry
         {
             Action = "PNCCL_Check_ConfigFile",
             EntityType = "ConfigFile",
@@ -117,7 +117,7 @@ public class PnccLChecker
         var configFileResult = await CheckConfigFile($"server_configs/{(serverInstance as dynamic)?.Name ?? "default"}.properties", "properties");
         combinedResult.AddFindings(configFileResult.Findings);
 
-        await _provenanceLogger.LogAsync(new LogEntry
+        _provenanceLogger.Log(new LogEntry
         {
             Action = "PNCCL_Check_AllForServer",
             EntityType = "ServerInstance",
