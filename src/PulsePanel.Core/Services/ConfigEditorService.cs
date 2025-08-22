@@ -79,7 +79,7 @@ public class ConfigEditorService : IConfigEditorService
         var hasErrors = !validation.IsValid;
         if (validatorOffline || hasErrors)
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "ConfigCommitBlocked",
                 EntityType = "ConfigFile",
@@ -117,7 +117,7 @@ public class ConfigEditorService : IConfigEditorService
         }
         File.Move(stagedPath, filePath);
 
-        await _provenanceLogger.LogAsync(new LogEntry
+        _provenanceLogger.Log(new LogEntry
         {
             Action = "ConfigCommitted",
             EntityType = "ConfigFile",

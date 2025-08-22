@@ -22,7 +22,7 @@ public class BlueprintInstaller
 
     public async Task<bool> InstallBlueprint(Blueprint blueprint, ServerEntry serverEntry, Dictionary<string, string> userInputs)
     {
-        await _provenanceLogger.LogAsync(new LogEntry
+        _provenanceLogger.Log(new LogEntry
         {
             Action = "Blueprint_Install_Attempt",
             EntityType = "Blueprint",
@@ -40,7 +40,7 @@ public class BlueprintInstaller
         var blueprintCompliance = await _pnccLChecker.CheckBlueprint(blueprint);
         if (!blueprintCompliance.IsValid)
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Blueprint_Install_Failed",
                 EntityType = "Blueprint",
@@ -77,7 +77,7 @@ public class BlueprintInstaller
                 var configFileCompliance = await _pnccLChecker.CheckConfigFile(targetPath, Path.GetExtension(targetPath));
                 if (!configFileCompliance.IsValid)
                 {
-                    await _provenanceLogger.LogAsync(new LogEntry
+                    _provenanceLogger.Log(new LogEntry
                     {
                         Action = "Blueprint_Install_Failed",
                         EntityType = "ConfigFile",
@@ -101,7 +101,7 @@ public class BlueprintInstaller
             await Task.Delay(500); // Simulate game installation time
             Console.WriteLine($"Simulating game installation for {blueprint.GameDefinition.Label}");
 
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Blueprint_Installed",
                 EntityType = "Blueprint",
@@ -119,7 +119,7 @@ public class BlueprintInstaller
         }
         catch (Exception ex)
         {
-            await _provenanceLogger.LogAsync(new LogEntry
+            _provenanceLogger.Log(new LogEntry
             {
                 Action = "Blueprint_Install_Exception",
                 EntityType = "Blueprint",
