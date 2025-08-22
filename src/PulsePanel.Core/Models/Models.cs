@@ -35,3 +35,31 @@ public class ServerEntry {
     public Dictionary<string, object> Tokens { get; set; } = new();
     public string InstallDir { get; set; } = default!;
 }
+
+public enum ServerStatus
+{
+    Running,
+    Stopped,
+    Starting,
+    Stopping,
+    Error,
+    Unknown
+}
+
+public enum ScheduledTaskType
+{
+    Restart,
+    Update,
+    StartOnLogin
+}
+
+public record ScheduleOptions
+(
+    ScheduledTaskType Type,
+    string Frequency, // e.g., "Daily", "Weekly", "Crontab"
+    string? CrontabExpression = null,
+    DateTime? SpecificTime = null, // For Daily/Weekly/Monthly
+    int? DelayMinutes = null // For StartOnLogin
+);
+
+

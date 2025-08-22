@@ -9,31 +9,50 @@ public record LogEntry
     [JsonPropertyName("ts")]
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
 
-    [JsonPropertyName("actor")]
-    public string Actor { get; init; } = "system";
+    [JsonPropertyName("author")]
+    public string Author { get; init; } = "system"; // Renamed from Actor
 
     [JsonPropertyName("action")]
     public string Action { get; init; } = string.Empty;
 
+    [JsonPropertyName("entityType")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? EntityType { get; init; } // New field for generic entity type
+
+    [JsonPropertyName("entityIdentifier")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? EntityIdentifier { get; init; } // New field for generic entity identifier
+
+    [JsonPropertyName("entityHash")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? EntityHash { get; init; } // New field for generic entity hash
+
     [JsonPropertyName("blueprint")]
-    public BlueprintInfo Blueprint { get; init; } = new();
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] // Make blueprint optional
+    public BlueprintInfo? Blueprint { get; init; } // Make blueprint optional
 
     [JsonPropertyName("inputs")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public InputsInfo? Inputs { get; init; }
 
     [JsonPropertyName("results")]
-    public ResultsInfo Results { get; init; } = new();
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] // Make results optional
+    public ResultsInfo? Results { get; init; } // Make results optional
 
     [JsonPropertyName("artifacts")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ArtifactsInfo? Artifacts { get; init; }
 
     [JsonPropertyName("license")]
-    public LicenseInfo License { get; init; } = new();
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] // Make license optional
+    public LicenseInfo? License { get; init; } // Make license optional
 
     [JsonPropertyName("env")]
     public EnvironmentInfo Env { get; init; } = new();
+
+    [JsonPropertyName("metadata")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Dictionary<string, object>? Metadata { get; init; } // New field for flexible metadata
 }
 
 public record BlueprintInfo

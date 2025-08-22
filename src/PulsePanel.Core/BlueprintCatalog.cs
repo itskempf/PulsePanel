@@ -4,7 +4,7 @@ using System.IO;
 using System.Text.Json;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
-using PulsePanel.Blueprints.Models;
+using Blueprint = PulsePanel.Blueprints.Models.Blueprint;
 
 namespace PulsePanel.Core;
 

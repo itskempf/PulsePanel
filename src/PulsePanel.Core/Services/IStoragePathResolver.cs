@@ -1,7 +1,6 @@
-namespace PulsePanel.Core.Services
+namespace PulsePanel.Core.Services;
+
+public interface IStoragePathResolver
 {
-    public interface IStoragePathResolver
-    {
-        string? GetStoragePath(string key);
-    }
+    string GetServerInstancePath(string serverId);
 }

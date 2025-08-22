@@ -12,4 +12,8 @@
     <PackageReference Include="YamlDotNet" Version="15.1.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\PulsePanel.Blueprints\PulsePanel.Blueprints.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -4,10 +4,11 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace PulsePanel.Core.Services;
 
-public class ProvenanceLogger : IProvenanceLogger
+public class ProvenanceLogger
 {
     private readonly string _logFilePath;
     private readonly long _maxLogSize;
@@ -35,23 +36,27 @@ public class ProvenanceLogger : IProvenanceLogger
         }
     }
 
-    public void Log(LogEntry entry)
+    public async Task LogAsync(LogEntry entry)
     {
         var json = JsonSerializer.Serialize(entry, JsonOptions);
 
-        lock (FileLock)
+        // Use Task.Run to offload file I/O to a thread pool thread
+        await Task.Run(() =>
         {
-            try
+            lock (FileLock)
             {
-                RotateIfNeeded();
-                File.AppendAllText(_logFilePath, json + Environment.NewLine);
+                try
+                {
+                    RotateIfNeeded();
+                    File.AppendAllText(_logFilePath, json + Environment.NewLine);
+                }
+                catch (Exception ex)
+                {
+                    // In a real app, this should go to a fallback logger (e.g., console error)
+                    Console.Error.WriteLine($"Failed to write to provenance log: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                // In a real app, this should go to a fallback logger (e.g., console error)
-                Console.Error.WriteLine($"Failed to write to provenance log: {ex.Message}");
-            }
-        }
+        });
     }
 
     private void RotateIfNeeded()
