@@ -1,4 +1,6 @@
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.Extensions.DependencyInjection;
+using PulsePanel.App.ViewModels;
 
 namespace PulsePanel.App.Pages
 {
@@ -7,7 +9,7 @@ namespace PulsePanel.App.Pages
         public ServersPage()
         {
             this.InitializeComponent();
-            // DataContext is inherited from the hosting Frame/Window
+            DataContext = App.Services.GetRequiredService<ServersViewModel>();
         }
     }
 }

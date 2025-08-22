@@ -10,7 +10,8 @@ namespace PulsePanel.App
         {
             this.InitializeComponent();
 
-            var vm = new MainViewModel(App.NavigationService);
+            var state = App.Services.GetService(typeof(PulsePanel.App.State.AppState)) as PulsePanel.App.State.AppState;
+            var vm = new MainViewModel(App.NavigationService, state!);
             if (this.Content is FrameworkElement root)
             {
                 root.DataContext = vm;
