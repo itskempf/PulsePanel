@@ -37,3 +37,37 @@ Conditions:
 This license covers **both source code and non‑code assets** (blueprints, documentation, UI themes, etc.) and incorporates principles from [Creative Commons BY‑NC‑SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) with additional software‑specific terms.
 
 See the full license text in [`/LICENSE`](./LICENSE).
+
+## Running the Desktop App (WinUI 3)
+
+Prerequisites (local Windows dev):
+
+- .NET SDK 9.x (9.0.304 or later)
+- Windows 10/11 SDK (10.0.19041+ recommended)
+- MSIX Packaging Tools / Windows app packaging components (provide PRI build tasks)
+
+Install the Windows SDK and packaging components via Visual Studio Installer → Modify → Individual components:
+
+- Windows 10 SDK (10.0.19041 or newer) or Windows 11 SDK
+- MSIX Packaging Tools
+- Optional: C++ (Universal Windows) tools (ensures PRI build tasks availability)
+
+Build and run locally:
+
+```powershell
+# From repo root
+dotnet build src/PulsePanel.App/PulsePanel.App.csproj -c Debug
+```
+
+If you see MSB4062 about `Microsoft.Build.Packaging.Pri.Tasks.dll`, the Windows packaging/PRI tools are missing. Install the prerequisites above and rebuild.
+
+## Solution structure
+
+- src/PulsePanel.App – WinUI 3 desktop shell (MVVM, navigation)
+- src/PulsePanel.Core – shared domain/services
+- src/PulsePanel.Cli – command-line entry
+- src/PulsePanel.Tests – unit tests
+
+## CI
+
+GitHub Actions builds and tests the solution on Windows on each push/PR.
