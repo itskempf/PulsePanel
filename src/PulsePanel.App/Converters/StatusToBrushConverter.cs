@@ -8,10 +8,15 @@ namespace PulsePanel.App.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            return value?.ToString() switch
+            var s = value?.ToString();
+            if (string.IsNullOrWhiteSpace(s)) return new SolidColorBrush(Microsoft.UI.Colors.Gray);
+            s = s.ToLowerInvariant();
+            return s switch
             {
-                "Running" => new SolidColorBrush(Microsoft.UI.Colors.Green),
-                "Stopped" => new SolidColorBrush(Microsoft.UI.Colors.Red),
+                "running" => new SolidColorBrush(Microsoft.UI.Colors.Green),
+                "stopped" => new SolidColorBrush(Microsoft.UI.Colors.Red),
+                "starting" => new SolidColorBrush(Microsoft.UI.Colors.Goldenrod),
+                "stopping" => new SolidColorBrush(Microsoft.UI.Colors.Orange),
                 _ => new SolidColorBrush(Microsoft.UI.Colors.Gray)
             };
         }

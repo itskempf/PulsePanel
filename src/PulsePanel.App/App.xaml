@@ -11,6 +11,7 @@
                 <controls:XamlControlsResources />
             </ResourceDictionary.MergedDictionaries>
             <conv:StatusToBrushConverter x:Key="StatusToBrushConverter" />
+            <conv:PortsToStringConverter x:Key="PortsToStringConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

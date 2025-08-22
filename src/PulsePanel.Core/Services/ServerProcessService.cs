@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using PulsePanel.Blueprints.Provenance;
 using PulsePanel.Core.Models;
 
@@ -8,7 +7,8 @@ namespace PulsePanel.Core.Services;
 public class ServerProcessService
 {
     private readonly ProvenanceLogger _logger;
-    private readonly ConcurrentDictionary<string, Process> _runningServers = new();
+    // Placeholder running-state tracker. In the future this can hold real process handles.
+    private readonly ConcurrentDictionary<string, byte> _runningServers = new();
 
     public ServerProcessService(ProvenanceLogger logger)
     {
@@ -30,11 +30,7 @@ public class ServerProcessService
 
     public ServerStatus GetServerStatus(ServerEntry serverEntry)
     {
-        if (_runningServers.TryGetValue(serverEntry.Id, out var p) && !p.HasExited)
-        {
-            return ServerStatus.Running;
-        }
-        return ServerStatus.Stopped;
+        return _runningServers.ContainsKey(serverEntry.Id) ? ServerStatus.Running : ServerStatus.Stopped;
     }
 
     public static string ResolveExec(string workingDir, string relativeExec)
@@ -46,5 +42,17 @@ public class ServerProcessService
             if (File.Exists(candidate + ".exe")) candidate += ".exe";
         }
         return candidate;
+    }
+
+    // Placeholder lifecycle operations — these just flip in-memory state for now
+    public void Start(string id)
+    {
+        EnsureLayout(id);
+        _runningServers[id] = 1;
+    }
+
+    public void Stop(string id)
+    {
+        _runningServers.TryRemove(id, out _);
     }
 }
