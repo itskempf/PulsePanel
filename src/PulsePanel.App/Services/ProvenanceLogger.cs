@@ -1,57 +1,38 @@
 using System;
-using System.Text.Json;
 using System.IO;
-using PulsePanel.App.Models; // Added
+using System.Text;
+using System.Threading.Tasks;
+using PulsePanel.App.Models;
 
 namespace PulsePanel.App.Services
 {
-    public interface IProvenanceLogger
+    public sealed class ProvenanceLogger : IProvenanceLogger
     {
-        void LogAction(string action, string blueprintId, string details);
-        void LogError(string action, string blueprintId, string details);
-    }
+        private readonly IProvenanceLogService _bus;
+        private readonly string _logDir;
 
-    public class ProvenanceLogger : IProvenanceLogger
-    {
-        private readonly IProvenanceLogService _logService;
-
-        public ProvenanceLogger(IProvenanceLogService logService)
+        public ProvenanceLogger(IProvenanceLogService bus)
         {
-            _logService = logService;
+            _bus = bus;
+            var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            _logDir = Path.Combine(appData, "PulsePanel", "Logs");
+            Directory.CreateDirectory(_logDir);
         }
 
-        public void LogAction(string action, string blueprintId, string details)
+        public Task InfoAsync(string message, Guid? sessionId = null) => WriteAsync(message, LogSeverity.Info, sessionId);
+        public Task WarningAsync(string message, Guid? sessionId = null) => WriteAsync(message, LogSeverity.Warning, sessionId);
+        public Task ErrorAsync(string message, Guid? sessionId = null) => WriteAsync(message, LogSeverity.Error, sessionId);
+
+        private Task WriteAsync(string message, LogSeverity sev, Guid? sessionId)
         {
-            var logMessage = $"ACTION: {action} | BP: {blueprintId} | Details: {details}";
-            var entry = new
-            {
-                Timestamp = DateTime.UtcNow,
-                Action = action,
-                BlueprintId = blueprintId,
-                Details = details,
-                Actor = Environment.UserName
-            };
-
-            var json = JsonSerializer.Serialize(entry);
-            File.AppendAllText("provenance.log", json + Environment.NewLine);
-            _logService.Write(new LogEntry(DateTime.UtcNow, logMessage, LogSeverity.Info)); // Write to UI log with LogEntry
-        }
-
-        public void LogError(string action, string blueprintId, string details)
-        {
-            var logMessage = $"ERROR: {action} | BP: {blueprintId} | Details: {details}";
-            var entry = new
-            {
-                Timestamp = DateTime.UtcNow,
-                Action = action,
-                BlueprintId = blueprintId,
-                Details = details,
-                Actor = Environment.UserName
-            };
-
-            var json = JsonSerializer.Serialize(entry);
-            File.AppendAllText("provenance.log", json + Environment.NewLine);
-            _logService.Write(new LogEntry(DateTime.UtcNow, logMessage, LogSeverity.Error)); // Write to UI log with LogEntry
+            var entry = new LogEntry { Timestamp = DateTime.UtcNow, Message = message, Severity = sev, SessionId = sessionId };
+            // File append
+            var line = $"{entry.Timestamp:o} [{sev}] {message}{(sessionId is null ? "" : $" (session:{sessionId:N})")}";
+            var path = Path.Combine(_logDir, $"{DateTime.UtcNow:yyyyMMdd}.log");
+            File.AppendAllText(path, line + Environment.NewLine, Encoding.UTF8);
+            // UI stream
+            _bus.Write(entry);
+            return Task.CompletedTask;
         }
     }
 }

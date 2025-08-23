@@ -29,6 +29,17 @@
                 <Button Content="Update" Command="{x:Bind CatalogVM.UpdateAsyncCommand}"/>
                 <Button Content="Validate" Command="{x:Bind CatalogVM.ValidateAsyncCommand}"/>
             </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <CheckBox Content="Dry‑Run" IsChecked="{x:Bind CatalogVM.IsDryRun, Mode=TwoWay}"/>
+                <Button Content="Replay Last Session" Command="{x:Bind CatalogVM.ReplayLastCommand}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Target:" VerticalAlignment="Center"/>
+                <ComboBox Width="240"
+                          ItemsSource="{x:Bind CatalogVM.NodesVM.Nodes}"
+                          SelectedItem="{x:Bind CatalogVM.NodesVM.SelectedNode, Mode=TwoWay}"
+                          DisplayMemberPath="Name"/>
+            </StackPanel>
         </StackPanel>
 
         <!-- Right: Live Log and History -->

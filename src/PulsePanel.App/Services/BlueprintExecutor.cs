@@ -1,87 +1,87 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
 using System.Threading.Tasks;
 using PulsePanel.App.Models;
 
 namespace PulsePanel.App.Services
 {
-    public class BlueprintExecutor : IBlueprintExecutor
+    public sealed class BlueprintExecutor : IBlueprintExecutor
     {
-        private readonly IProvenanceLogger _logger; // Changed to interface
-        private readonly IActionHandlerFactory _actionFactory;
-        private readonly IProvenanceHistoryService _historyService; // Added
-        private readonly IProvenanceLogService _logService; // Added to subscribe to events
+        private readonly IActionHandlerFactory _handlerFactory;
+        private readonly IProvenanceLogger _log;
+        private readonly IExecutionRecorderFactory _recorderFactory;
+        private readonly IProvenanceLogService _logBus;
 
-        public BlueprintExecutor(IProvenanceLogger logger, IActionHandlerFactory actionFactory,
-                                 IProvenanceHistoryService historyService, IProvenanceLogService logService) // Modified constructor
+        public BlueprintExecutor(
+            IActionHandlerFactory handlerFactory,
+            IProvenanceLogger log,
+            IExecutionRecorderFactory recorderFactory,
+            IProvenanceLogService logBus)
         {
-            _logger = logger;
-            _actionFactory = actionFactory;
-            _historyService = historyService;
-            _logService = logService;
+            _handlerFactory = handlerFactory;
+            _log = log;
+            _recorderFactory = recorderFactory;
+            _logBus = logBus;
         }
 
-        public async Task ExecuteInstallAsync(Blueprint bp, CancellationToken ct = default)
-            => await ExecuteStepsAsync(bp, bp.InstallSteps, "Install", ct);
+        public Task ExecuteInstallAsync(Blueprint blueprint, ExecutionOptions? options = null)
+            => ExecuteAsync(blueprint, ExecutionActionType.Install, options ?? ExecutionOptions.Default);
 
-        public async Task ExecuteUpdateAsync(Blueprint bp, CancellationToken ct = default)
-            => await ExecuteStepsAsync(bp, bp.UpdateSteps, "Update", ct);
+        public Task ExecuteUpdateAsync(Blueprint blueprint, ExecutionOptions? options = null)
+            => ExecuteAsync(blueprint, ExecutionActionType.Update, options ?? ExecutionOptions.Default);
 
-        public async Task ExecuteValidateAsync(Blueprint bp, CancellationToken ct = default)
-            => await ExecuteStepsAsync(bp, bp.ValidateSteps, "Validate", ct);
+        public Task ExecuteValidateAsync(Blueprint blueprint, ExecutionOptions? options = null)
+            => ExecuteAsync(blueprint, ExecutionActionType.Validate, options ?? ExecutionOptions.Default);
 
-        private async Task ExecuteStepsAsync(Blueprint bp,
-                                             List<BlueprintStep> steps,
-                                             string phase,
-                                             CancellationToken ct)
+        public async Task ExecuteAsync(Blueprint blueprint, ExecutionActionType action, ExecutionOptions options)
         {
-            var sessionId = Guid.NewGuid();
-            var startedAt = DateTime.UtcNow;
-            var outcome = "Success";
-            var sessionLogs = new List<LogEntry>();
-
-            EventHandler<LogEntry> logEntryHandler = (sender, entry) =>
-            {
-                sessionLogs.Add(entry);
-            };
-
-            _logService.LogEntryAdded += logEntryHandler; // Subscribe to log events
+            using var recorder = _recorderFactory.Start(blueprint, action, options);
+            void OnLog(object? s, LogEntry e) { if (e.SessionId is null || e.SessionId == recorder.Session.Id) recorder.Append(e); }
+            _logBus.LogEntryAdded += OnLog;
 
             try
             {
-                _logger.LogAction($"{phase}.Start", bp.Id, $"{phase} started for {bp.Name}");
+                await _log.InfoAsync($"Starting {action} for {blueprint.Name}@{blueprint.Version}", recorder.Session.Id);
 
-                foreach (var step in steps)
+                var actions = action switch
                 {
-                    try
+                    ExecutionActionType.Install => blueprint.InstallActions,
+                    ExecutionActionType.Update => blueprint.UpdateActions,
+                    ExecutionActionType.Validate => blueprint.ValidateActions,
+                    _ => Enumerable.Empty<BlueprintAction>()
+                };
+
+                foreach (var step in actions)
+                {
+                    options.CancellationToken.ThrowIfCancellationRequested();
+
+                    var handler = _handlerFactory.Create(step.Type);
+                    if (options.DryRun)
                     {
-                        _logger.LogAction($"{phase}.Step.Start", bp.Id, $"Action: {step.Action}");
-                        var handler = _actionFactory.GetHandler(step.Action);
-                        await handler.ExecuteAsync(step.Parameters, ct);
-                        _logger.LogAction($"{phase}.Step.Complete", bp.Id, $"Action complete: {step.Action}");
+                        await _log.InfoAsync($"[DRY-RUN] Would execute: {step.Type} — {step.Description}", recorder.Session.Id);
+                        continue;
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"{phase}.Step.Error", bp.Id, $"Action failed: {step.Action} — {ex.Message}");
-                        outcome = "Failed";
-                        throw; // stop execution on failure
-                    }
+
+                    await _log.InfoAsync($"Executing: {step.Type} — {step.Description}", recorder.Session.Id);
+                    await handler.HandleAsync(step, _log, options.CancellationToken, recorder.Session.Id);
                 }
 
-                _logger.LogAction($"{phase}.Complete", bp.Id, $"{phase} completed for {bp.Name}");
+                await _log.InfoAsync("Execution complete.", recorder.Session.Id);
+                recorder.Complete(success: true);
             }
-            catch (Exception)
+            catch (OperationCanceledException)
             {
-                outcome = "Failed";
-                throw;
+                await _log.WarningAsync("Execution cancelled.", recorder.Session.Id);
+                recorder.Complete(success: false, cancelled: true);
+            }
+            catch (Exception ex)
+            {
+                await _log.ErrorAsync($"Execution failed: {ex.Message}", recorder.Session.Id);
+                recorder.Complete(success: false, error: ex.Message);
             }
             finally
             {
-                _logService.LogEntryAdded -= logEntryHandler; // Unsubscribe
-                var session = new ExecutionSession(sessionId, startedAt, bp.Name, bp.Version,
-                                                   Environment.UserName, outcome, sessionLogs);
-                _historyService.SaveSession(session);
+                _logBus.LogEntryAdded -= OnLog;
             }
         }
     }

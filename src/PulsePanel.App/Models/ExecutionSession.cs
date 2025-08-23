@@ -1,21 +1,27 @@
 using System;
 using System.Collections.Generic;
-using System.Linq; // Added
 
 namespace PulsePanel.App.Models
 {
-    public record ExecutionSession(
-        Guid Id,
-        DateTime StartedAt,
-        string BlueprintName,
-        string BlueprintVersion,
-        string TriggeredBy,
-        string Outcome,
-        List<LogEntry> Entries
-    )
+    public enum ExecutionActionType { Install, Update, Validate }
+
+    public sealed class ExecutionSession
     {
-        public TimeSpan Duration => Entries.Any() ? Entries.Last().Timestamp - Entries.First().Timestamp : TimeSpan.Zero;
-        public int WarningCount => Entries.Count(e => e.Severity == LogSeverity.Warning);
-        public int ErrorCount => Entries.Count(e => e.Severity == LogSeverity.Error);
+        public Guid Id { get; init; }
+        public DateTime StartedAt { get; init; }
+        public DateTime? EndedAt { get; set; }
+        public string BlueprintName { get; init; } = "";
+        public string BlueprintVersion { get; init; } = "";
+        public string TriggeredBy { get; init; } = "";
+        public string Outcome { get; set; } = "Running";
+        public ExecutionActionType Action { get; init; }
+        public bool DryRun { get; init; }
+        public string? TargetNodeId { get; init; }
+        public string? Error { get; set; }
+        public List<LogEntry> Entries { get; } = new();
+
+        public TimeSpan? Duration => EndedAt is null ? null : EndedAt - StartedAt;
+        public int WarningCount => Entries.FindAll(e => e.Severity == LogSeverity.Warning).Count;
+        public int ErrorCount => Entries.FindAll(e => e.Severity == LogSeverity.Error).Count;
     }
 }

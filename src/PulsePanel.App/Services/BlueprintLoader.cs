@@ -1,64 +1,35 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using PulsePanel.App.Models;
 
 namespace PulsePanel.App.Services
 {
-    public class BlueprintLoader
+    public sealed class BlueprintLoader
     {
-        private readonly string _blueprintDir;
+        private readonly string _root;
 
-        public BlueprintLoader(string blueprintDir)
+        public BlueprintLoader(string? root = null)
         {
-            _blueprintDir = blueprintDir;
+            _root = root ?? Path.Combine(AppContext.BaseDirectory, "Assets", "Blueprints");
+            Directory.CreateDirectory(_root);
         }
 
         public IEnumerable<Blueprint> LoadAll()
-        {
-            if (!Directory.Exists(_blueprintDir))
-                throw new DirectoryNotFoundException($"Blueprint directory not found: {_blueprintDir}");
+            => Directory.EnumerateFiles(_root, "*.blueprint.json").Select(Load);
 
-            var blueprints = new List<Blueprint>();
-
-            foreach (var file in Directory.GetFiles(_blueprintDir, "*.json"))
-            {
-                var bp = LoadFromFile(file);
-                Validate(bp);
-                blueprints.Add(bp);
-            }
-
-            return blueprints;
-        }
-
-        public Blueprint LoadFromFile(string path)
+        public Blueprint Load(string path)
         {
             var json = File.ReadAllText(path);
-            var bp = JsonSerializer.Deserialize<Blueprint>(json, new JsonSerializerOptions
+            var bp = JsonSerializer.Deserialize<Blueprint>(json, new JsonSerializerOptions(JsonSerializerDefaults.Web)) ?? new Blueprint();
+            var sidecar = Path.ChangeExtension(path, ".compliance.json");
+            if (File.Exists(sidecar))
             {
-                PropertyNameCaseInsensitive = true,
-                ReadCommentHandling = JsonCommentHandling.Skip,
-                AllowTrailingCommas = true
-            });
-
-            if (bp == null)
-                throw new InvalidDataException($"Failed to parse blueprint: {path}");
-
+                var rules = JsonSerializer.Deserialize<List<ComplianceRule>>(File.ReadAllText(sidecar), new JsonSerializerOptions(JsonSerializerDefaults.Web));
+                bp.ComplianceRules = rules ?? new List<ComplianceRule>();
+            }
             return bp;
-        }
-
-        private void Validate(Blueprint bp)
-        {
-            if (string.IsNullOrWhiteSpace(bp.Id))
-                throw new InvalidDataException("Blueprint missing Id");
-            if (string.IsNullOrWhiteSpace(bp.Name))
-                throw new InvalidDataException("Blueprint missing Name");
-            if (string.IsNullOrWhiteSpace(bp.Version))
-                throw new InvalidDataException("Blueprint missing Version");
-            if (bp.InstallSteps.Count == 0 && bp.UpdateSteps.Count == 0 && bp.ValidateSteps.Count == 0)
-                throw new InvalidDataException($"Blueprint '{bp.Name}' has no execution steps");
         }
     }
 }

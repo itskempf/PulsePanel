@@ -1,29 +1,22 @@
-using System;
 using System.Collections.Generic;
 
 namespace PulsePanel.App.Models
 {
-    public class Blueprint
+    public sealed class Blueprint
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string Name { get; set; } = string.Empty;
-        public string Version { get; set; } = "1.0.0";
-        public string Description { get; set; } = string.Empty;
-
-        // Metadata for provenance
-        public string Author { get; set; } = string.Empty;
-        public string License { get; set; } = string.Empty;
-        public string Checksum { get; set; } = string.Empty;
-
-        // Execution steps
-        public List<BlueprintStep> InstallSteps { get; set; } = new();
-        public List<BlueprintStep> UpdateSteps { get; set; } = new();
-        public List<BlueprintStep> ValidateSteps { get; set; } = new();
+        public string Name { get; init; } = "";
+        public string Version { get; init; } = "";
+        public string Description { get; init; } = "";
+        public IEnumerable<BlueprintAction> InstallActions { get; init; } = new List<BlueprintAction>();
+        public IEnumerable<BlueprintAction> UpdateActions { get; init; } = new List<BlueprintAction>();
+        public IEnumerable<BlueprintAction> ValidateActions { get; init; } = new List<BlueprintAction>();
+        public List<ComplianceRule>? ComplianceRules { get; set; }
     }
 
-    public class BlueprintStep
+    public sealed class BlueprintAction
     {
-        public string Action { get; set; } = string.Empty; // e.g. "CopyFile", "RunCommand"
-        public Dictionary<string, string> Parameters { get; set; } = new();
+        public string Type { get; init; } = "";
+        public string Description { get; init; } = "";
+        public Dictionary<string, string>? Parameters { get; init; }
     }
 }

@@ -1,0 +1,29 @@
+<Page
+    x:Class="PulsePanel.App.Views.JobQueuePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:PulsePanel.App.ViewModels"
+    xmlns:models="using:PulsePanel.App.Models">
+    <Page.DataContext>
+        <vm:JobQueueViewModel />
+    </Page.DataContext>
+
+    <Grid Padding="12">
+        <ListView ItemsSource="{x:Bind ViewModel.Jobs}">
+            <ListView.ItemTemplate>
+                <DataTemplate x:DataType="models:ExecutionJob">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{x:Bind Blueprint.Name}" Width="180" />
+                        <TextBlock Text="{x:Bind Action}" Width="90"/>
+                        <TextBlock Text="{x:Bind Status}" Width="110"/>
+                        <TextBlock Text="{x:Bind StartedAt}" Width="160"/>
+                        <TextBlock Text="{x:Bind EndedAt}" Width="160"/>
+                        <Button Content="Cancel"
+                                Command="{x:Bind ViewModel.CancelAsyncCommand}"
+                                CommandParameter="{x:Bind}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</Page>

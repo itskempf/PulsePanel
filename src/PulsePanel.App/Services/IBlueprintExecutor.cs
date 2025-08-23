@@ -1,4 +1,3 @@
-using System.Threading;
 using System.Threading.Tasks;
 using PulsePanel.App.Models;
 
@@ -6,8 +5,9 @@ namespace PulsePanel.App.Services
 {
     public interface IBlueprintExecutor
     {
-        Task ExecuteInstallAsync(Blueprint bp, CancellationToken ct = default);
-        Task ExecuteUpdateAsync(Blueprint bp, CancellationToken ct = default);
-        Task ExecuteValidateAsync(Blueprint bp, CancellationToken ct = default);
+        Task ExecuteAsync(Blueprint blueprint, ExecutionActionType action, ExecutionOptions options);
+        Task ExecuteInstallAsync(Blueprint blueprint, ExecutionOptions? options = null);
+        Task ExecuteUpdateAsync(Blueprint blueprint, ExecutionOptions? options = null);
+        Task ExecuteValidateAsync(Blueprint blueprint, ExecutionOptions? options = null);
     }
 }
