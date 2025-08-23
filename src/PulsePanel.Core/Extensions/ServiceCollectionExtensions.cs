@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using PulsePanel.Core.Events;
 using PulsePanel.Core.Services;
 using PulsePanel.Windows.Services;
 using PulsePanel.App.Services;
@@ -21,6 +22,8 @@ namespace PulsePanel.Core.Extensions
             services.AddSingleton<IFirewallManager, FirewallManager>();
             services.AddSingleton<IProvenanceLogger, ProvenanceLogger>();
             services.AddSingleton<IProvenance, Provenance>();
+            services.AddSingleton<IEventBus, EventBus>();
+            services.AddSingleton<IServerStore, ServerStore>();
 
             // Health monitoring
             services.AddSingleton<IServerProcessInspector, DefaultServerProcessInspector>();

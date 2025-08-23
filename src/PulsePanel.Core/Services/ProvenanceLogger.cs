@@ -36,9 +36,21 @@ public class ProvenanceLogger : IProvenanceLogger
         }
     }
 
-    public void Log(LogEntry entry)
+    public void Log(ProvenanceEvent evt)
     {
-        var json = JsonSerializer.Serialize(entry, JsonOptions);
+        // If no EventId is set, generate one
+        if (string.IsNullOrEmpty(evt.EventId))
+        {
+            evt.EventId = Guid.NewGuid().ToString("n");
+        }
+        
+        // Generate correlation ID if not set
+        if (string.IsNullOrEmpty(evt.CorrelationId))
+        {
+            evt.CorrelationId = Guid.NewGuid().ToString("n");
+        }
+
+        var json = JsonSerializer.Serialize(evt, JsonOptions);
 
         lock (FileLock)
         {

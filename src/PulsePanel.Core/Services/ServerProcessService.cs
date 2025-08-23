@@ -2,119 +2,121 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using PulsePanel.Blueprints.Provenance;
+using PulsePanel.Core.Events;
 using PulsePanel.Core.Models;
 
-namespace PulsePanel.Core.Services;
-
-public class ServerProcessService : IServerProcessService
+namespace PulsePanel.Core.Services
 {
-    private readonly Dictionary<string, Process> _running = new();
-    private readonly ProvenanceLogger _logger;
-    private readonly IServerStore _serverStore;
-
-    public ServerProcessService(ProvenanceLogger logger, IServerStore serverStore)
+    public class ServerProcessService : IServerProcessService
     {
-        _logger = logger;
-        _serverStore = serverStore;
-    }
+        private readonly Dictionary<string, Process> _running = new();
+        private readonly IProvenanceLogger _logger;
+        private readonly IServerStore _serverStore;
+        private readonly IEventBus _eventBus;
 
-    public void StartServer(string id, string exePath, string args)
-    {
-        if (_running.ContainsKey(id))
-            throw new InvalidOperationException($"Server '{id}' is already running");
-
-        if (!File.Exists(exePath))
-            throw new FileNotFoundException($"Executable not found: {exePath}");
-
-        var proc = new Process
+        public ServerProcessService(IProvenanceLogger logger, IServerStore serverStore, IEventBus eventBus)
         {
-            StartInfo = new ProcessStartInfo
-            {
-                FileName = exePath,
-                Arguments = args,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                CreateNoWindow = true
-            },
-            EnableRaisingEvents = true
-        };
-
-        proc.OutputDataReceived += (s, e) =>
-        {
-            if (!string.IsNullOrWhiteSpace(e.Data))
-            {
-                _logger.Log(new LogEntry
-                {
-                    Action = "ServerOutput",
-                    Timestamp = DateTime.UtcNow,
-                    Metadata = new Dictionary<string, object> { { "ServerId", id }, { "Line", e.Data } }
-                });
-            }
-        };
-
-        proc.ErrorDataReceived += (s, e) =>
-        {
-            if (!string.IsNullOrWhiteSpace(e.Data))
-            {
-                _logger.Log(new LogEntry
-                {
-                    Action = "ServerError",
-                    Timestamp = DateTime.UtcNow,
-                    Metadata = new Dictionary<string, object> { { "ServerId", id }, { "Line", e.Data } }
-                });
-            }
-        };
-
-        proc.Exited += (s, e) =>
-        {
-            _running.Remove(id);
-            _serverStore.UpdateStatus(id, ServerStatus.Stopped);
-
-            _logger.Log(new LogEntry
-            {
-                Action = "ServerExited",
-                Timestamp = DateTime.UtcNow,
-                Metadata = new Dictionary<string, object> { { "ServerId", id }, { "ExitCode", proc.ExitCode } }
-            });
-        };
-
-        proc.Start();
-        proc.BeginOutputReadLine();
-        proc.BeginErrorReadLine();
-
-        _running[id] = proc;
-        _serverStore.UpdateStatus(id, ServerStatus.Running);
-
-        _logger.Log(new LogEntry
-        {
-            Action = "ServerStarted",
-            Timestamp = DateTime.UtcNow,
-            Metadata = new Dictionary<string, object> { { "ServerId", id }, { "Executable", exePath }, { "Arguments", args } }
-        });
-    }
-
-    public void StopServer(string id)
-    {
-        if (_running.TryGetValue(id, out var proc))
-        {
-            proc.Kill(true);
-            _running.Remove(id);
-            _serverStore.UpdateStatus(id, ServerStatus.Stopped);
-
-            _logger.Log(new LogEntry
-            {
-                Action = "ServerStopped",
-                Timestamp = DateTime.UtcNow,
-                Metadata = new Dictionary<string, object> { { "ServerId", id } }
-            });
+            _logger = logger;
+            _serverStore = serverStore;
+            _eventBus = eventBus;
         }
-        else
-        {
-            throw new InvalidOperationException($"Server '{id}' is not running");
-        }
-    }
 
-    public bool IsServerRunning(string id) => _running.ContainsKey(id);
+        public void StartServer(string id, string exePath, string args)
+        {
+            var correlationId = Guid.NewGuid().ToString("n");
+
+            if (_running.ContainsKey(id))
+                throw new InvalidOperationException($"Server '{id}' is already running");
+
+            if (!File.Exists(exePath))
+                throw new FileNotFoundException($"Executable not found: {exePath}");
+
+            var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = exePath,
+                    Arguments = args,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                },
+                EnableRaisingEvents = true
+            };
+
+            proc.OutputDataReceived += (s, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    _logger.Log(new ProvenanceEvent
+                    {
+                        Action = "Server.Output",
+                        Category = "Server",
+                        ResourceId = id,
+                        CorrelationId = correlationId,
+                        Timestamp = DateTime.UtcNow,
+                        Metadata = new { Line = e.Data }
+                    });
+                }
+            };
+
+            proc.ErrorDataReceived += (s, e) =>
+            {
+                if (!string.IsNullOrWhiteSpace(e.Data))
+                {
+                    _logger.Log(new ProvenanceEvent
+                    {
+                        Action = "Server.Error",
+                        Category = "Server",
+                        ResourceId = id,
+                        CorrelationId = correlationId,
+                        Timestamp = DateTime.UtcNow,
+                        Metadata = new { Line = e.Data }
+                    });
+                }
+            };
+
+            proc.Exited += (s, e) =>
+            {
+                _running.Remove(id);
+                _serverStore.UpdateStatus(id, ServerStatus.Stopped);
+
+                var exitEvent = proc.ExitCode == 0 
+                    ? new ServerStoppedEvent(id, correlationId)
+                    : new ServerCrashedEvent(id, $"Process exited with code {proc.ExitCode}", correlationId);
+                
+                _eventBus.Publish(exitEvent);
+            };
+
+            proc.Start();
+            proc.BeginOutputReadLine();
+            proc.BeginErrorReadLine();
+
+            _running[id] = proc;
+            _serverStore.UpdateStatus(id, ServerStatus.Running);
+
+            _eventBus.Publish(new ServerStartedEvent(id, correlationId));
+        }
+
+        public void StopServer(string id)
+        {
+            if (_running.TryGetValue(id, out var proc))
+            {
+                var correlationId = Guid.NewGuid().ToString("n");
+                
+                proc.Kill(true);
+                _running.Remove(id);
+                _serverStore.UpdateStatus(id, ServerStatus.Stopped);
+
+                _eventBus.Publish(new ServerStoppedEvent(id, correlationId));
+            }
+            else
+            {
+                throw new InvalidOperationException($"Server '{id}' is not running");
+            }
+        }
+
+        public bool IsServerRunning(string id) => _running.ContainsKey(id);
+    }
 }

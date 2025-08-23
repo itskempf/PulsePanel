@@ -4,6 +4,6 @@ namespace PulsePanel.Core.Services
 {
     public interface IProvenanceLogger
     {
-        void Log(LogEntry entry);
+        void Log(ProvenanceEvent evt);
     }
 }

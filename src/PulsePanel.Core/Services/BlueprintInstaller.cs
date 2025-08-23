@@ -3,135 +3,120 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using PulsePanel.Core.Models;
-using PulsePanel.Blueprints.Provenance;
+using PulsePanel.Core.Events;
 
-namespace PulsePanel.Core.Services;
-
-public class BlueprintInstaller
+namespace PulsePanel.Core.Services
 {
-    private readonly ProvenanceLogger _provenanceLogger;
-    private readonly PnccLChecker _pnccLChecker;
-    private readonly ServerProcessService _serverProcessService; // To get server directories
-
-    public BlueprintInstaller(ProvenanceLogger provenanceLogger, PnccLChecker pnccLChecker, ServerProcessService serverProcessService)
+    public class BlueprintInstaller
     {
-        _provenanceLogger = provenanceLogger;
-        _pnccLChecker = pnccLChecker;
-        _serverProcessService = serverProcessService;
-    }
+        private readonly IProvenanceLogger _provenanceLogger;
+        private readonly PnccLChecker _pnccLChecker;
+        private readonly ServerProcessService _serverProcessService;
+        private readonly IEventBus _eventBus;
 
-    public async Task<bool> InstallBlueprint(Blueprint blueprint, ServerEntry serverEntry, Dictionary<string, string> userInputs)
-    {
-        _provenanceLogger.Log(new LogEntry
+        public BlueprintInstaller(
+            IProvenanceLogger provenanceLogger,
+            PnccLChecker pnccLChecker,
+            ServerProcessService serverProcessService,
+            IEventBus eventBus)
         {
-            Action = "Blueprint_Install_Attempt",
-            EntityType = "Blueprint",
-            EntityIdentifier = blueprint.Id,
-            Metadata = new Dictionary<string, object>
-            {
-                { "blueprintName", blueprint.Name },
-                { "blueprintVersion", blueprint.Version },
-                { "serverName", serverEntry.Name },
-                { "userInputs", userInputs }
-            }
-        });
-
-        // 1. Perform PNCCL check on the blueprint itself
-        var blueprintCompliance = await _pnccLChecker.CheckBlueprint(blueprint);
-        if (!blueprintCompliance.IsValid)
-        {
-            _provenanceLogger.Log(new LogEntry
-            {
-                Action = "Blueprint_Install_Failed",
-                EntityType = "Blueprint",
-                EntityIdentifier = blueprint.Id,
-                Metadata = new Dictionary<string, object>
-                {
-                    { "blueprintName", blueprint.Name },
-                    { "serverName", serverEntry.Name },
-                    { "reason", "Blueprint failed PNCCL compliance check" },
-                    { "complianceFindings", blueprintCompliance.Findings }
-                }
-            });
-            return false;
+            _provenanceLogger = provenanceLogger;
+            _pnccLChecker = pnccLChecker;
+            _serverProcessService = serverProcessService;
+            _eventBus = eventBus;
         }
 
-        try
+        public async Task<bool> InstallBlueprint(Blueprint blueprint, ServerEntry serverEntry, Dictionary<string, string> userInputs)
         {
-            _serverProcessService.EnsureLayout(serverEntry.Id); // Ensure server directories exist
-            var configDir = _serverProcessService.ConfigDir(serverEntry.Id);
+            var correlationId = Guid.NewGuid().ToString("n");
+            
+            // Publish install started event
+            var startedEvent = new BlueprintInstallStartedEvent(
+                blueprint.Id,
+                blueprint.Name,
+                serverEntry.Id,
+                serverEntry.Name,
+                correlationId
+            );
+            _eventBus.Publish(startedEvent);
 
-            // 2. Simulate template processing and file generation
-            foreach (var template in blueprint.Templates)
+            var blueprintCompliance = await _pnccLChecker.CheckBlueprint(blueprint);
+            if (!blueprintCompliance.IsValid)
             {
-                var processedContent = template.Content; // Dummy: no actual token replacement yet
-                foreach (var input in userInputs)
-                {
-                    processedContent = processedContent.Replace($"{{{{{input.Key}}}}}", input.Value); // Simple token replacement
-                }
+                var failedEvent = new BlueprintInstallFailedEvent(
+                    blueprint.Id,
+                    blueprint.Name,
+                    serverEntry.Id,
+                    serverEntry.Name,
+                    "Blueprint failed PNCCL compliance check",
+                    blueprintCompliance.Findings,
+                    correlationId,
+                    startedEvent.EventId
+                );
+                _eventBus.Publish(failedEvent);
+                return false;
+            }
 
-                var targetPath = Path.Combine(configDir, template.Target);
-                await File.WriteAllTextAsync(targetPath, processedContent);
+            try
+            {
+                _serverProcessService.EnsureLayout(serverEntry.Id);
+                var configDir = _serverProcessService.ConfigDir(serverEntry.Id);
 
-                // 3. Perform PNCCL check on generated config file
-                var configFileCompliance = await _pnccLChecker.CheckConfigFile(targetPath, Path.GetExtension(targetPath));
-                if (!configFileCompliance.IsValid)
+                foreach (var template in blueprint.Templates)
                 {
-                    _provenanceLogger.Log(new LogEntry
+                    var processedContent = template.Content;
+                    foreach (var input in userInputs)
                     {
-                        Action = "Blueprint_Install_Failed",
-                        EntityType = "ConfigFile",
-                        EntityIdentifier = targetPath,
-                        Metadata = new Dictionary<string, object>
-                        {
-                            { "blueprintName", blueprint.Name },
-                            { "serverName", serverEntry.Name },
-                            { "reason", "Generated config file failed PNCCL compliance check" },
-                            { "complianceFindings", configFileCompliance.Findings }
-                        }
-                    });
-                    // Decide whether to halt installation or just log a warning
-                    // For now, we'll halt if any generated config is invalid.
-                    return false;
+                        processedContent = processedContent.Replace($"{{{{{input.Key}}}}}", input.Value);
+                    }
+
+                    var targetPath = Path.Combine(configDir, template.Target);
+                    await File.WriteAllTextAsync(targetPath, processedContent);
+
+                    var configFileCompliance = await _pnccLChecker.CheckConfigFile(targetPath, Path.GetExtension(targetPath));
+                    if (!configFileCompliance.IsValid)
+                    {
+                        var configFailedEvent = new BlueprintInstallFailedEvent(
+                            blueprint.Id,
+                            blueprint.Name,
+                            serverEntry.Id,
+                            serverEntry.Name,
+                            "Generated config file failed PNCCL compliance check",
+                            new { FileName = template.Target, Findings = configFileCompliance.Findings },
+                            correlationId,
+                            startedEvent.EventId
+                        );
+                        _eventBus.Publish(configFailedEvent);
+                        return false;
+                    }
                 }
+                
+                var succeededEvent = new BlueprintInstallSucceededEvent(
+                    blueprint.Id,
+                    blueprint.Name,
+                    serverEntry.Id,
+                    serverEntry.Name,
+                    correlationId,
+                    startedEvent.EventId
+                );
+                _eventBus.Publish(succeededEvent);
+                return true;
             }
-
-            // 4. Simulate game installation (delegated)
-            // In a real scenario, this would call a SteamCmdManager or similar service
-            await Task.Delay(500); // Simulate game installation time
-            Console.WriteLine($"Simulating game installation for {blueprint.GameDefinition.Label}");
-
-            _provenanceLogger.Log(new LogEntry
+            catch (Exception ex)
             {
-                Action = "Blueprint_Installed",
-                EntityType = "Blueprint",
-                EntityIdentifier = blueprint.Id,
-                Metadata = new Dictionary<string, object>
-                {
-                    { "blueprintName", blueprint.Name },
-                    { "blueprintVersion", blueprint.Version },
-                    { "serverName", serverEntry.Name },
-                    { "userInputs", userInputs }
-                }
-            });
-
-            return true;
-        }
-        catch (Exception ex)
-        {
-            _provenanceLogger.Log(new LogEntry
-            {
-                Action = "Blueprint_Install_Exception",
-                EntityType = "Blueprint",
-                EntityIdentifier = blueprint.Id,
-                Metadata = new Dictionary<string, object>
-                {
-                    { "blueprintName", blueprint.Name },
-                    { "serverName", serverEntry.Name },
-                    { "exception", ex.Message }
-                }
-            });
-            return false;
+                var errorEvent = new BlueprintInstallFailedEvent(
+                    blueprint.Id,
+                    blueprint.Name,
+                    serverEntry.Id,
+                    serverEntry.Name,
+                    "Unexpected error during installation",
+                    ex.ToString(),
+                    correlationId,
+                    startedEvent.EventId
+                );
+                _eventBus.Publish(errorEvent);
+                return false;
+            }
         }
     }
 }

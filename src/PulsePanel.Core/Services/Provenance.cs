@@ -13,29 +13,37 @@ namespace PulsePanel.Core.Services
             _logger = logger;
         }
 
-        public void Info(string action, object metadata = null, string correlationId = null) =>
+        public void Info(string action, object metadata = null, string correlationId = null, string actorId = null, string resourceId = null, string category = null) =>
             _logger.Log(new ProvenanceEvent
             {
                 Action = action,
                 Timestamp = DateTime.UtcNow,
                 CorrelationId = correlationId ?? Guid.NewGuid().ToString("n"),
+                EventId = Guid.NewGuid().ToString("n"),
+                ActorId = actorId ?? Environment.UserName,
+                ResourceId = resourceId,
+                Category = category,
                 Metadata = Enrich(metadata)
             });
 
-        public void Error(string action, string error, object metadata = null, string correlationId = null) =>
+        public void Error(string action, string error, object metadata = null, string correlationId = null, string actorId = null, string resourceId = null, string category = null) =>
             _logger.Log(new ProvenanceEvent
             {
                 Action = action,
                 Timestamp = DateTime.UtcNow,
                 CorrelationId = correlationId ?? Guid.NewGuid().ToString("n"),
+                EventId = Guid.NewGuid().ToString("n"),
+                ActorId = actorId ?? Environment.UserName,
+                ResourceId = resourceId,
+                Category = category,
                 Metadata = Enrich(new { Error = error, Extra = metadata })
             });
 
-        public IDisposable Begin(string action, object metadata = null, string correlationId = null)
+        public IDisposable Begin(string action, object metadata = null, string correlationId = null, string actorId = null, string resourceId = null, string category = null)
         {
             var cid = correlationId ?? Guid.NewGuid().ToString("n");
-            Info(action + "Start", metadata, cid);
-            return new Scope(this, action, cid);
+            Info(action + "Start", metadata, cid, actorId, resourceId, category);
+            return new Scope(this, action, cid, actorId, resourceId, category);
         }
 
         private object Enrich(object metadata)
@@ -61,17 +69,25 @@ namespace PulsePanel.Core.Services
             private readonly Provenance _p;
             private readonly string _action;
             private readonly string _cid;
+            private readonly string _actorId;
+            private readonly string _resourceId;
+            private readonly string _category;
             private bool _disposed;
 
-            public Scope(Provenance p, string action, string cid)
+            public Scope(Provenance p, string action, string cid, string actorId, string resourceId, string category)
             {
-                _p = p; _action = action; _cid = cid;
+                _p = p;
+                _action = action;
+                _cid = cid;
+                _actorId = actorId;
+                _resourceId = resourceId;
+                _category = category;
             }
 
             public void Dispose()
             {
                 if (_disposed) return;
-                _p.Info(_action + "End", null, _cid);
+                _p.Info(_action + "End", null, _cid, _actorId, _resourceId, _category);
                 _disposed = true;
             }
         }
