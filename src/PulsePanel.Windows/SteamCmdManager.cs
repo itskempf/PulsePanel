@@ -1,42 +1,63 @@
 using PulsePanel.Blueprints.Provenance;
 using PulsePanel.Core.Services;
 using System;
-using System.Threading.Tasks;
+using System.IO;
+using System.IO.Compression;
+using System.Net.Http;
 
 namespace PulsePanel.Windows
 {
     public class SteamCmdManager : ISteamCmdManager
     {
         private readonly IProvenanceLogger _logger;
+        private readonly string _steamCmdDir;
 
         public SteamCmdManager(IProvenanceLogger logger)
         {
             _logger = logger;
+            _steamCmdDir = Path.Combine(AppContext.BaseDirectory, "tools", "steamcmd");
         }
 
-        public void SetupSteamCmd(string path)
+        public void SetupSteamCmd()
         {
-            // TODO: Implement SteamCMD setup logic
+            Directory.CreateDirectory(_steamCmdDir);
+            var zipPath = Path.Combine(_steamCmdDir, "steamcmd.zip");
+
+            using var client = new HttpClient();
+            var data = client.GetByteArrayAsync("https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip").Result;
+            File.WriteAllBytes(zipPath, data);
+
+            ZipFile.ExtractToDirectory(zipPath, _steamCmdDir, overwriteFiles: true);
+            File.Delete(zipPath);
+
             _logger.Log(new LogEntry
             {
-                Action = "steamcmd-setup",
-                Results = new ResultsInfo { Status = "success" },
-                Inputs = new InputsInfo { MetaPath = path }
+                Action = "SteamCmdSetup",
+                Timestamp = DateTime.UtcNow,
+                Metadata = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "Path", _steamCmdDir }
+                }
             });
-            Console.WriteLine($"SteamCMD setup placeholder executed for path: {path}");
         }
 
-        public bool VerifySteamCmd(string path)
+        public bool VerifySteamCmd()
         {
-            // TODO: Implement SteamCMD verification logic
+            var exe = Path.Combine(_steamCmdDir, "steamcmd.exe");
+            var exists = File.Exists(exe);
+
             _logger.Log(new LogEntry
             {
-                Action = "steamcmd-verify",
-                Results = new ResultsInfo { Status = "success" },
-                Inputs = new InputsInfo { MetaPath = path }
+                Action = "SteamCmdVerified",
+                Timestamp = DateTime.UtcNow,
+                Metadata = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "Path", exe },
+                    { "Exists", exists }
+                }
             });
-            Console.WriteLine($"SteamCMD verification placeholder executed for path: {path}");
-            return true; // Placeholder: always return true
+
+            return exists;
         }
     }
 }

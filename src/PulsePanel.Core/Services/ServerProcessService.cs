@@ -1,58 +1,120 @@
-using System.Collections.Concurrent;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using PulsePanel.Blueprints.Provenance;
 using PulsePanel.Core.Models;
 
 namespace PulsePanel.Core.Services;
 
-public class ServerProcessService
+public class ServerProcessService : IServerProcessService
 {
+    private readonly Dictionary<string, Process> _running = new();
     private readonly ProvenanceLogger _logger;
-    // Placeholder running-state tracker. In the future this can hold real process handles.
-    private readonly ConcurrentDictionary<string, byte> _runningServers = new();
+    private readonly IServerStore _serverStore;
 
-    public ServerProcessService(ProvenanceLogger logger)
+    public ServerProcessService(ProvenanceLogger logger, IServerStore serverStore)
     {
         _logger = logger;
+        _serverStore = serverStore;
     }
 
-    private string ServersRoot => Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "servers"));
-    public string GetServerDir(string id) => Path.Combine(ServersRoot, id);
-    public string FilesDir(string id) => Path.Combine(GetServerDir(id), "files");
-    public string ConfigDir(string id) => Path.Combine(GetServerDir(id), "config");
-    public string LogsDir(string id) => Path.Combine(GetServerDir(id), "logs");
-
-    public void EnsureLayout(string id)
+    public void StartServer(string id, string exePath, string args)
     {
-        Directory.CreateDirectory(FilesDir(id));
-        Directory.CreateDirectory(ConfigDir(id));
-        Directory.CreateDirectory(LogsDir(id));
-    }
+        if (_running.ContainsKey(id))
+            throw new InvalidOperationException($"Server '{id}' is already running");
 
-    public ServerStatus GetServerStatus(ServerEntry serverEntry)
-    {
-        return _runningServers.ContainsKey(serverEntry.Id) ? ServerStatus.Running : ServerStatus.Stopped;
-    }
+        if (!File.Exists(exePath))
+            throw new FileNotFoundException($"Executable not found: {exePath}");
 
-    public static string ResolveExec(string workingDir, string relativeExec)
-    {
-        var normalized = relativeExec.Replace("/", Path.DirectorySeparatorChar.ToString());
-        var candidate = Path.Combine(workingDir, normalized);
-        if (OperatingSystem.IsWindows() && !candidate.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+        var proc = new Process
         {
-            if (File.Exists(candidate + ".exe")) candidate += ".exe";
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = exePath,
+                Arguments = args,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            },
+            EnableRaisingEvents = true
+        };
+
+        proc.OutputDataReceived += (s, e) =>
+        {
+            if (!string.IsNullOrWhiteSpace(e.Data))
+            {
+                _logger.Log(new LogEntry
+                {
+                    Action = "ServerOutput",
+                    Timestamp = DateTime.UtcNow,
+                    Metadata = new Dictionary<string, object> { { "ServerId", id }, { "Line", e.Data } }
+                });
+            }
+        };
+
+        proc.ErrorDataReceived += (s, e) =>
+        {
+            if (!string.IsNullOrWhiteSpace(e.Data))
+            {
+                _logger.Log(new LogEntry
+                {
+                    Action = "ServerError",
+                    Timestamp = DateTime.UtcNow,
+                    Metadata = new Dictionary<string, object> { { "ServerId", id }, { "Line", e.Data } }
+                });
+            }
+        };
+
+        proc.Exited += (s, e) =>
+        {
+            _running.Remove(id);
+            _serverStore.UpdateStatus(id, ServerStatus.Stopped);
+
+            _logger.Log(new LogEntry
+            {
+                Action = "ServerExited",
+                Timestamp = DateTime.UtcNow,
+                Metadata = new Dictionary<string, object> { { "ServerId", id }, { "ExitCode", proc.ExitCode } }
+            });
+        };
+
+        proc.Start();
+        proc.BeginOutputReadLine();
+        proc.BeginErrorReadLine();
+
+        _running[id] = proc;
+        _serverStore.UpdateStatus(id, ServerStatus.Running);
+
+        _logger.Log(new LogEntry
+        {
+            Action = "ServerStarted",
+            Timestamp = DateTime.UtcNow,
+            Metadata = new Dictionary<string, object> { { "ServerId", id }, { "Executable", exePath }, { "Arguments", args } }
+        });
+    }
+
+    public void StopServer(string id)
+    {
+        if (_running.TryGetValue(id, out var proc))
+        {
+            proc.Kill(true);
+            _running.Remove(id);
+            _serverStore.UpdateStatus(id, ServerStatus.Stopped);
+
+            _logger.Log(new LogEntry
+            {
+                Action = "ServerStopped",
+                Timestamp = DateTime.UtcNow,
+                Metadata = new Dictionary<string, object> { { "ServerId", id } }
+            });
         }
-        return candidate;
+        else
+        {
+            throw new InvalidOperationException($"Server '{id}' is not running");
+        }
     }
 
-    // Placeholder lifecycle operations — these just flip in-memory state for now
-    public void Start(string id)
-    {
-        EnsureLayout(id);
-        _runningServers[id] = 1;
-    }
-
-    public void Stop(string id)
-    {
-        _runningServers.TryRemove(id, out _);
-    }
+    public bool IsServerRunning(string id) => _running.ContainsKey(id);
 }
