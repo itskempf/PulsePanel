@@ -1,0 +1,22 @@
+<Page
+    x:Class="PulsePanel.App.Views.BlueprintExecutionLogPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:PulsePanel.App.ViewModels">
+
+    <Page.DataContext>
+        <vm:BlueprintExecutionLogViewModel />
+    </Page.DataContext>
+
+    <Grid Padding="12">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{x:Bind ViewModel.LogEntries}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <TextBlock Text="{x:Bind}" FontFamily="Consolas" FontSize="14"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
+</Page>

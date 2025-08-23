@@ -43,10 +43,13 @@ namespace PulsePanel.App
 
                     // Provenance
                     services.AddSingleton<IProvenanceLogger, ProvenanceLogger>();
+                    services.AddSingleton<IProvenanceLogService, ProvenanceLogService>();
 
                     // ViewModels
                     services.AddSingleton<MainViewModel>();
                     services.AddSingleton<ServersViewModel>();
+                    services.AddTransient<BlueprintCatalogViewModel>();
+                    services.AddTransient<BlueprintExecutionLogViewModel>();
                 });
     }
 }
