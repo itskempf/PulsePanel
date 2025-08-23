@@ -2,6 +2,7 @@ using Microsoft.UI.Xaml.Controls;
 using System.ComponentModel;
 using PulsePanel.App.Services; // Added
 using System.Diagnostics; // Added for Debug.WriteLine
+using System.Linq; // Added
 
 namespace PulsePanel.App.Views
 {
@@ -38,6 +39,15 @@ namespace PulsePanel.App.Views
             {
                 Debug.WriteLine($"Loaded: {bp.Name} ({bp.Version})");
             }
+        }
+
+        private async void RunInstallTest()
+        {
+            var loader = App.Current.Services.GetService(typeof(BlueprintLoader)) as BlueprintLoader;
+            var executor = App.Current.Services.GetService(typeof(IBlueprintExecutor)) as IBlueprintExecutor;
+
+            var bp = loader.LoadAll().First();
+            await executor.ExecuteInstallAsync(bp);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

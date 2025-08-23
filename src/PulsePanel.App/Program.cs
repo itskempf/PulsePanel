@@ -30,8 +30,11 @@ namespace PulsePanel.App
                     services.AddSingleton<IServerProcessService, ServerProcessService>();
                     services.AddSingleton<IStorageManager, StorageManager>();
 
-                    services.AddSingleton(sp =>
+                                        services.AddSingleton(sp =>
                         new BlueprintLoader(Path.Combine(AppContext.BaseDirectory, "Assets", "Blueprints")));
+
+                    services.AddSingleton<IActionHandlerFactory, ActionHandlerFactory>();
+                    services.AddSingleton<IBlueprintExecutor, BlueprintExecutor>();
 
                     // Windows integrations
                     services.AddSingleton<IWindowsServiceManager, WindowsServiceManager>();
