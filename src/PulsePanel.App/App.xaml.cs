@@ -1,7 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using PulsePanel.App.Services;
 using PulsePanel.Core.Services;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 using PulsePanel.App.State;
@@ -11,9 +11,11 @@ namespace PulsePanel.App
 {
     public partial class App : Application
     {
-    public static Window? MainAppWindow { get; private set; }
-    public static INavigationService NavigationService { get; private set; } = new NavigationService();
-    public static IServiceProvider Services { get; private set; } = default!;
+        public IServiceProvider Services { get; set; }
+
+        public static Window? MainAppWindow { get; private set; }
+        public static INavigationService NavigationService { get; private set; } = new NavigationService();
+        public static IServiceProvider ServiceProvider { get; private set; } = default!;
         
         public App()
         {
@@ -23,6 +25,14 @@ namespace PulsePanel.App
 
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
+            var logger = Services.GetRequiredService<IProvenanceLogger>();
+            logger.Log(new ProvenanceEvent
+            {
+                Action = "AppStart",
+                Timestamp = DateTime.UtcNow,
+                Metadata = new { Args = Environment.GetCommandLineArgs() }
+            });
+
             base.OnLaunched(args);
             // Initialize shared state
             var appState = Services.GetRequiredService<AppState>();
@@ -49,7 +59,7 @@ namespace PulsePanel.App
             // App services
             services.AddSingleton<INavigationService>(NavigationService);
 
-            Services = services.BuildServiceProvider();
+            ServiceProvider = services.BuildServiceProvider();
         }
     }
 }

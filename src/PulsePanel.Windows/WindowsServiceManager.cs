@@ -1,6 +1,8 @@
+using System;
+using System.Diagnostics;
+using System.ServiceProcess;
 using PulsePanel.Blueprints.Provenance;
 using PulsePanel.Core.Services;
-using System;
 
 namespace PulsePanel.Windows
 {
@@ -13,48 +15,84 @@ namespace PulsePanel.Windows
             _logger = logger;
         }
 
-        public void InstallService()
+        public void InstallService(string exePath, string serviceName)
         {
-            // TODO: Implement Windows service installation logic
+            RunScCommand($"create \"{serviceName}\" binPath= \"{exePath}\" start= auto");
+
             _logger.Log(new LogEntry
             {
-                Action = "install-service",
-                Results = new ResultsInfo { Status = "success" }
+                Action = "WindowsServiceInstalled",
+                Timestamp = DateTime.UtcNow,
+                Metadata = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "ServiceName", serviceName },
+                    { "Executable", exePath }
+                }
             });
-            Console.WriteLine("Windows service installation placeholder executed.");
         }
 
-        public void RemoveService()
+        public void StartService(string serviceName)
         {
-            // TODO: Implement Windows service removal logic
+            using var sc = new ServiceController(serviceName);
+            if (sc.Status != ServiceControllerStatus.Running)
+                sc.Start();
+
             _logger.Log(new LogEntry
             {
-                Action = "remove-service",
-                Results = new ResultsInfo { Status = "success" }
+                Action = "WindowsServiceStarted",
+                Timestamp = DateTime.UtcNow,
+                Metadata = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "ServiceName", serviceName }
+                }
             });
-            Console.WriteLine("Windows service removal placeholder executed.");
         }
 
-        public void StartService()
+        public void StopService(string serviceName)
         {
-            // TODO: Implement Windows service start logic
+            using var sc = new ServiceController(serviceName);
+            if (sc.Status != ServiceControllerStatus.Stopped)
+                sc.Stop();
+
             _logger.Log(new LogEntry
             {
-                Action = "start-service",
-                Results = new ResultsInfo { Status = "success" }
+                Action = "WindowsServiceStopped",
+                Timestamp = DateTime.UtcNow,
+                Metadata = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "ServiceName", serviceName }
+                }
             });
-            Console.WriteLine("Windows service start placeholder executed.");
         }
 
-        public void StopService()
+        public void RemoveService(string serviceName)
         {
-            // TODO: Implement Windows service stop logic
+            RunScCommand($"delete \"{serviceName}\"");
+
             _logger.Log(new LogEntry
             {
-                Action = "stop-service",
-                Results = new ResultsInfo { Status = "success" }
+                Action = "WindowsServiceRemoved",
+                Timestamp = DateTime.UtcNow,
+                Metadata = new System.Collections.Generic.Dictionary<string, object>
+                {
+                    { "ServiceName", serviceName }
+                }
             });
-            Console.WriteLine("Windows service stop placeholder executed.");
+        }
+
+        private void RunScCommand(string arguments)
+        {
+            var proc = Process.Start(new ProcessStartInfo
+            {
+                FileName = "sc.exe",
+                Arguments = arguments,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            });
+
+            proc.WaitForExit();
         }
     }
 }
