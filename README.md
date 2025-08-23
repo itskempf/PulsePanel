@@ -37,7 +37,7 @@ From the **Servers** page, click **View Analytics** to see CPU/Memory trends in 
 
 ## 📸 Screenshots
 
-&gt; *(Add images in `docs/images/` and link them here)*
+
 
 ![ServersPage with Health Metrics](docs/images/servers-health.png)  
 ![AnalyticsPage with Trends](docs/images/analytics-page.png)
