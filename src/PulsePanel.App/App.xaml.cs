@@ -1,6 +1,7 @@
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
-using PulsePanel.App.Services;
+using PulsePanel.Core.Extensions;
 using PulsePanel.Core.Services;
 using System;
 using System.IO;
@@ -11,27 +12,23 @@ namespace PulsePanel.App
 {
     public partial class App : Application
     {
-        public IServiceProvider Services { get; set; }
+        public static IServiceProvider Services { get; private set; } = default!;
+        private CancellationTokenSource? _healthCts;
 
-        public static Window? MainAppWindow { get; private set; }
-        public static INavigationService NavigationService { get; private set; } = new NavigationService();
-        public static IServiceProvider ServiceProvider { get; private set; } = default!;
-        
         public App()
         {
             InitializeComponent();
-            ConfigureServices();
+            var sc = new ServiceCollection();
+            sc.AddPulsePanelServices();
+            Services = sc.BuildServiceProvider();
         }
 
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
-            var logger = Services.GetRequiredService<IProvenanceLogger>();
-            logger.Log(new ProvenanceEvent
-            {
-                Action = "AppStart",
-                Timestamp = DateTime.UtcNow,
-                Metadata = new { Args = Environment.GetCommandLineArgs() }
-            });
+            // Start health monitor
+            var health = Services.GetRequiredService<IHealthMonitorService>();
+            _healthCts = new CancellationTokenSource();
+            _ = health.StartAsync(_healthCts.Token);
 
             base.OnLaunched(args);
             // Initialize shared state
@@ -40,26 +37,13 @@ namespace PulsePanel.App
             _ = appState.InitializeAsync(serverService);
 
             var window = new MainWindow();
-            MainAppWindow = window;
             window.Activate();
         }
 
-        private static void ConfigureServices()
+        protected override void OnSuspending(object sender, SuspendingEventArgs e)
         {
-            var services = new ServiceCollection();
-
-            // Core singletons
-            services.AddSingleton<ProvenanceLogger>(_ => new ProvenanceLogger(Path.Combine(AppContext.BaseDirectory, "logs", "provenance.jsonl")));
-            services.AddSingleton<ServerStore>();
-            services.AddSingleton<ServerProcessService>();
-            services.AddSingleton<IServerService, ServerService>();
-            services.AddSingleton<AppState>();
-            services.AddTransient<ServersViewModel>();
-
-            // App services
-            services.AddSingleton<INavigationService>(NavigationService);
-
-            ServiceProvider = services.BuildServiceProvider();
+            _healthCts?.Cancel();
+            base.OnSuspending(sender, e);
         }
     }
 }

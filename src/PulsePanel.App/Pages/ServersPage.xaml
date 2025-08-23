@@ -9,18 +9,70 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid RowDefinitions="Auto,*" Padding="10">
-        <TextBlock Text="Servers" FontSize="20" FontWeight="Bold"/>
-    <ListView Grid.Row="1" ItemsSource="{Binding Servers}" SelectedItem="{Binding SelectedServer, Mode=TwoWay}">
+    <Grid ColumnSpacing="16" Padding="16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" />
+            <ColumnDefinition Width="3*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Servers list -->
+        <ListView Grid.Column="0"
+                  ItemsSource="{Binding Servers}"
+                  SelectedItem="{Binding Selected, Mode=TwoWay}">
             <ListView.ItemTemplate>
-        <DataTemplate x:DataType="core:ServerEntry">
-                    <StackPanel Orientation="Horizontal" Spacing="12">
-                        <TextBlock Text="●" Foreground="{Binding Status, Converter={StaticResource StatusToBrushConverter}}"/>
-                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding Game}" Foreground="#666"/>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                        <TextBlock Text="—" Margin="8,0"/>
+                        <TextBlock Text="{Binding Status}" Foreground="Gray"/>
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
+        <!-- Details + actions -->
+        <ScrollViewer Grid.Column="1">
+            <StackPanel Spacing="12">
+                <TextBlock Text="Server Details" FontSize="18" FontWeight="SemiBold"/>
+                <TextBlock Text="{Binding Selected.Name, Mode=OneWay}" FontSize="16"/>
+
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Refresh" Command="{Binding RefreshCommand}" />
+                    <Button Content="Start" Command="{Binding StartCommand}" />
+                    <Button Content="Stop" Command="{Binding StopCommand}" />
+                    <Button Content="View Analytics" Click="Analytics_Click" />
+                </StackPanel>
+
+                <Separator/>
+                <TextBlock Text="Live Metrics" FontSize="16" FontWeight="SemiBold"/>
+
+                <Grid ColumnSpacing="16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="CPU" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Selected.CpuPercent, StringFormat={}{0:F1}%}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Memory" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding Selected.MemoryMb, StringFormat={}{0:F1} MB}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="Uptime" FontWeight="SemiBold"/>
+                        <TextBlock>
+                            <Run Text="{Binding Selected.Uptime.Days}"/><Run Text="d "/>
+                            <Run Text="{Binding Selected.Uptime.Hours}"/><Run Text="h "/>
+                            <Run Text="{Binding Selected.Uptime.Minutes}"/><Run Text="m"/>
+                        </TextBlock>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </ScrollViewer>
     </Grid>
 </Page>

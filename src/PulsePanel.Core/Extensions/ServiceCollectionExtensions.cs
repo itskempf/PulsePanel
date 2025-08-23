@@ -1,6 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using PulsePanel.Core.Services;
 using PulsePanel.Windows.Services;
+using PulsePanel.App.Services;
+using PulsePanel.App.ViewModels;
+using PulsePanel.Core.Impl;
 
 namespace PulsePanel.Core.Extensions
 {
@@ -13,19 +16,23 @@ namespace PulsePanel.Core.Extensions
             services.AddSingleton<IConfigDiffService, ConfigDiffService>();
             services.AddSingleton<IServerProcessService, ServerProcessService>();
             services.AddSingleton<IStorageManager, StorageManager>();
-
-            // Windows integrations
             services.AddSingleton<IWindowsServiceManager, WindowsServiceManager>();
             services.AddSingleton<ISteamCmdManager, SteamCmdManager>();
             services.AddSingleton<IFirewallManager, FirewallManager>();
-
-            // Provenance (base + wrapper)
             services.AddSingleton<IProvenanceLogger, ProvenanceLogger>();
             services.AddSingleton<IProvenance, Provenance>();
 
-            // ViewModels (UI may request)
-            services.AddSingleton<MainViewModel>();
-            services.AddSingleton<ServersViewModel>();
+            // Health monitoring
+            services.AddSingleton<IServerProcessInspector, DefaultServerProcessInspector>();
+            services.AddSingleton<IHealthMonitorService, HealthMonitorService>();
+
+            // App-level services
+            services.AddSingleton<ProvenanceReader>();
+
+            // ViewModels
+            services.AddTransient<ServersViewModel>();
+            services.AddTransient<SettingsViewModel>();
+            services.AddTransient<AuditLogViewModel>();
 
             return services;
         }
