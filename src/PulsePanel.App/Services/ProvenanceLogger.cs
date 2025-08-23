@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json;
 using System.IO;
+using PulsePanel.App.Models; // Added
 
 namespace PulsePanel.App.Services
 {
@@ -21,6 +22,7 @@ namespace PulsePanel.App.Services
 
         public void LogAction(string action, string blueprintId, string details)
         {
+            var logMessage = $"ACTION: {action} | BP: {blueprintId} | Details: {details}";
             var entry = new
             {
                 Timestamp = DateTime.UtcNow,
@@ -32,11 +34,12 @@ namespace PulsePanel.App.Services
 
             var json = JsonSerializer.Serialize(entry);
             File.AppendAllText("provenance.log", json + Environment.NewLine);
-            _logService.Write($"ACTION: {action} | BP: {blueprintId} | Details: {details}"); // Write to UI log
+            _logService.Write(new LogEntry(DateTime.UtcNow, logMessage, LogSeverity.Info)); // Write to UI log with LogEntry
         }
 
         public void LogError(string action, string blueprintId, string details)
         {
+            var logMessage = $"ERROR: {action} | BP: {blueprintId} | Details: {details}";
             var entry = new
             {
                 Timestamp = DateTime.UtcNow,
@@ -48,7 +51,7 @@ namespace PulsePanel.App.Services
 
             var json = JsonSerializer.Serialize(entry);
             File.AppendAllText("provenance.log", json + Environment.NewLine);
-            _logService.Write($"ERROR: {action} | BP: {blueprintId} | Details: {details}"); // Write to UI log
+            _logService.Write(new LogEntry(DateTime.UtcNow, logMessage, LogSeverity.Error)); // Write to UI log with LogEntry
         }
     }
 }

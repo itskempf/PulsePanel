@@ -18,6 +18,7 @@
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityHidden" UseHidden="True" />
             <converters:BoolToVisibilityConverter x:Key="InvertedBoolToVisibility" Invert="True" />
+            <converters:SeverityToBrushConverter x:Key="SeverityToBrushConverter" />
             <Color x:Key="Primary">#512BD4</Color>
 
             <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}" />

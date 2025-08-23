@@ -42,14 +42,20 @@ namespace PulsePanel.App
                     services.AddSingleton<IFirewallManager, FirewallManager>();
 
                     // Provenance
+                    // Provenance
+                    // Provenance
                     services.AddSingleton<IProvenanceLogger, ProvenanceLogger>();
                     services.AddSingleton<IProvenanceLogService, ProvenanceLogService>();
+                    services.AddSingleton<IProvenanceHistoryService, ProvenanceHistoryService>();
+                    services.AddSingleton<IProvenanceInsightsService, ProvenanceInsightsService>();
 
                     // ViewModels
                     services.AddSingleton<MainViewModel>();
                     services.AddSingleton<ServersViewModel>();
                     services.AddTransient<BlueprintCatalogViewModel>();
                     services.AddTransient<BlueprintExecutionLogViewModel>();
+                    services.AddTransient<BlueprintControlCenterPage>();
+                    services.AddTransient<BlueprintHistoryViewModel>();
                 });
     }
 }

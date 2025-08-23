@@ -1,0 +1,107 @@
+<Page
+    x:Class="PulsePanel.App.Views.BlueprintControlCenterPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:PulsePanel.App.ViewModels">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left: Catalog -->
+        <StackPanel Grid.Column="0" Padding="12" Spacing="8">
+            <TextBlock Text="Blueprint Catalog" FontSize="20" FontWeight="Bold"/>
+            <ListView ItemsSource="{x:Bind CatalogVM.Blueprints}"
+                      SelectedItem="{x:Bind CatalogVM.SelectedBlueprint, Mode=TwoWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Blueprint">
+                        <StackPanel>
+                            <TextBlock Text="{x:Bind Name}" FontWeight="Bold"/>
+                            <TextBlock Text="{x:Bind Description}" FontStyle="Italic"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Install" Command="{x:Bind CatalogVM.InstallAsyncCommand}"/>
+                <Button Content="Update" Command="{x:Bind CatalogVM.UpdateAsyncCommand}"/>
+                <Button Content="Validate" Command="{x:Bind CatalogVM.ValidateAsyncCommand}"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Right: Live Log and History -->
+        <Pivot Grid.Column="1" Padding="12">
+            <PivotItem Header="Live Log">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Execution Log" FontSize="20" FontWeight="Bold"/>
+
+                    <!-- Filters -->
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBox PlaceholderText="Search..." Width="200"
+                                 Text="{x:Bind LogVM.FilterText, Mode=TwoWay}"/>
+                        <CheckBox Content="Info" IsChecked="{x:Bind LogVM.ShowInfo, Mode=TwoWay}"/>
+                        <CheckBox Content="Warnings" IsChecked="{x:Bind LogVM.ShowWarnings, Mode=TwoWay}"/>
+                        <CheckBox Content="Errors" IsChecked="{x:Bind LogVM.ShowErrors, Mode=TwoWay}"/>
+                    </StackPanel>
+
+                    <!-- Log List -->
+                    <ScrollViewer VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{x:Bind LogVM.FilteredEntries}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="models:LogEntry">
+                                    <TextBlock Text="{x:Bind Message}"
+                                               Foreground="{x:Bind Severity, Converter={StaticResource SeverityToBrushConverter}}"
+                                               FontFamily="Consolas" FontSize="14"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </StackPanel>
+            </PivotItem>
+
+            <PivotItem Header="History">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Execution History" FontSize="20" FontWeight="Bold" Grid.Row="0"/>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="3*"/>
+                        </Grid.ColumnDefinitions>
+                        <!-- Session List -->
+                        <ListView ItemsSource="{x:Bind HistoryVM.Sessions}"
+                                  SelectedItem="{x:Bind HistoryVM.SelectedSession, Mode=TwoWay}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:ExecutionSession">
+                                    <StackPanel>
+                                        <TextBlock Text="{x:Bind BlueprintName}" FontWeight="Bold"/>
+                                        <TextBlock Text="{x:Bind StartedAt.LocalDateTime}" FontStyle="Italic"/>
+                                        <TextBlock Text="{x:Bind Outcome}" Foreground="Gray"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                        <!-- Selected Session Log -->
+                        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{x:Bind HistoryVM.SelectedSession.Entries}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate x:DataType="models:LogEntry">
+                                        <TextBlock Text="{x:Bind Message}"
+                                                   Foreground="{x:Bind Severity, Converter={StaticResource SeverityToBrushConverter}}"
+                                                   FontFamily="Consolas" FontSize="14"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Grid>
+                </Grid>
+            </PivotItem>
+        </Pivot>
+    </Grid>
+</Page>
