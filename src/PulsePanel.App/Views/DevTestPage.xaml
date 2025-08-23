@@ -1,0 +1,29 @@
+<Page
+    x:Class="PulsePanel.Views.DevTestPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:converters="using:PulsePanel.Converters">
+
+    <Page.Resources>
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibility" />
+        <converters:BoolToVisibilityMultiConverter x:Key="BoolToVisibilityMulti" UseAnd="True" />
+    </Page.Resources>
+
+    <StackPanel Spacing="8" Padding="20">
+        <CheckBox Content="Condition A" IsChecked="{x:Bind ConditionA, Mode=TwoWay}" />
+        <CheckBox Content="Condition B" IsChecked="{x:Bind ConditionB, Mode=TwoWay}" />
+
+        <TextBlock Text="Visible if ConditionA is true"
+                   Visibility="{x:Bind ConditionA, Converter={StaticResource BoolToVisibility}}" />
+
+        <TextBlock Text="Visible if both conditions are true"
+                   Visibility="{Binding Path=., Converter={StaticResource BoolToVisibilityMulti}}">
+            <TextBlock.Visibility>
+                <MultiBinding Converter="{StaticResource BoolToVisibilityMulti}">
+                    <Binding Path="ConditionA" />
+                    <Binding Path="ConditionB" />
+                </MultiBinding>
+            </TextBlock.Visibility>
+        </TextBlock>
+    </StackPanel>
+</Page>
