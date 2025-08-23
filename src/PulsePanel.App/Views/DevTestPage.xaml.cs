@@ -1,10 +1,14 @@
 using Microsoft.UI.Xaml.Controls;
 using System.ComponentModel;
+using PulsePanel.App.Services; // Added
+using System.Diagnostics; // Added for Debug.WriteLine
 
-namespace PulsePanel.Views
+namespace PulsePanel.App.Views
 {
     public sealed partial class DevTestPage : Page, INotifyPropertyChanged
     {
+        private readonly BlueprintLoader _loader; // Added
+
         private bool _conditionA;
         public bool ConditionA
         {
@@ -23,6 +27,17 @@ namespace PulsePanel.Views
         {
             this.InitializeComponent();
             DataContext = this;
+            _loader = App.Current.Services.GetService(typeof(BlueprintLoader)) as BlueprintLoader; // Modified
+            LoadBlueprints(); // Added
+        }
+
+        private void LoadBlueprints() // Added method
+        {
+            var bps = _loader.LoadAll();
+            foreach (var bp in bps)
+            {
+                Debug.WriteLine($"Loaded: {bp.Name} ({bp.Version})");
+            }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

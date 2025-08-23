@@ -1,8 +1,6 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.UI.Xaml;
-using PulsePanel.Core.Services;
-using PulsePanel.Windows;
+using PulsePanel.App.Services;
+using System.IO;
+using System;
 
 namespace PulsePanel.App
 {
@@ -32,6 +30,9 @@ namespace PulsePanel.App
                     services.AddSingleton<IServerProcessService, ServerProcessService>();
                     services.AddSingleton<IStorageManager, StorageManager>();
 
+                    services.AddSingleton(sp =>
+                        new BlueprintLoader(Path.Combine(AppContext.BaseDirectory, "Assets", "Blueprints")));
+
                     // Windows integrations
                     services.AddSingleton<IWindowsServiceManager, WindowsServiceManager>();
                     services.AddSingleton<ISteamCmdManager, SteamCmdManager>();
@@ -46,3 +47,4 @@ namespace PulsePanel.App
                 });
     }
 }
+

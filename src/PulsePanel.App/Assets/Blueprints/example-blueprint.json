@@ -1,0 +1,34 @@
+{
+  "Id": "minecraft-server-basic",
+  "Name": "Minecraft Server (Basic)",
+  "Version": "1.0.0",
+  "Description": "Sets up a basic Minecraft server with default configuration.",
+  "Author": "PulsePanel Team",
+  "License": "CC-BY-NC-4.0",
+  "Checksum": "abc123",
+  "InstallSteps": [
+    {
+      "Action": "DownloadFile",
+      "Parameters": {
+        "Url": "https://example.com/server.jar",
+        "Destination": "C:\\Servers\\Minecraft\\server.jar"
+      }
+    },
+    {
+      "Action": "WriteFile",
+      "Parameters": {
+        "Path": "C:\\Servers\\Minecraft\\eula.txt",
+        "Content": "eula=true"
+      }
+    }
+  ],
+  "UpdateSteps": [],
+  "ValidateSteps": [
+    {
+      "Action": "CheckFileExists",
+      "Parameters": {
+        "Path": "C:\\Servers\\Minecraft\\server.jar"
+      }
+    }
+  ]
+}
