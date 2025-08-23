@@ -6,8 +6,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:viewmodels="using:PulsePanel.App.ViewModels"
     xmlns:core="using:PulsePanel.Core.Models"
+    xmlns:converters="using:PulsePanel.App.Converters"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Page.Resources>
+        <converters:NullToBoolConverter x:Key="NullToBoolConverter" />
+    </Page.Resources>
 
     <Grid ColumnSpacing="16" Padding="16">
         <Grid.ColumnDefinitions>
@@ -40,7 +45,9 @@
                     <Button Content="Refresh" Command="{Binding RefreshCommand}" />
                     <Button Content="Start" Command="{Binding StartCommand}" />
                     <Button Content="Stop" Command="{Binding StopCommand}" />
-                    <Button Content="View Analytics" Click="Analytics_Click" />
+                    <Button Content="View Analytics"
+                            Click="ViewAnalytics_Click"
+                            IsEnabled="{Binding Selected, Converter={StaticResource NullToBoolConverter}}" />
                 </StackPanel>
 
                 <Separator/>
