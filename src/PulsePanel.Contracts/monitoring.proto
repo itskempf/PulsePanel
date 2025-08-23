@@ -1,0 +1,26 @@
+syntax = "proto3";
+option csharp_namespace = "PulsePanel.Contracts";
+
+package pulse.monitoring;
+
+message HealthRequest { repeated string server_ids = 1; }
+message Vitals {
+  string server_id = 1;
+  string status = 2;
+  double cpu_percent = 3;
+  double ram_percent = 4;
+  double disk_percent = 5;
+  double net_in_mbps = 6;
+  double net_out_mbps = 7;
+  uint64 pid = 8;
+  uint32 port = 9;
+  double heartbeat_age_sec = 10;
+  string service_status = 11;
+  uint64 uptime_sec = 12;
+  string updated_at_utc = 13;
+}
+message HealthResponse { repeated Vitals items = 1; }
+
+service Monitor {
+  rpc GetHealth(HealthRequest) returns (HealthResponse);
+}

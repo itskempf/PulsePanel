@@ -1,25 +1,64 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using PulsePanel.App.Pages;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Navigation;
+using PulsePanel.App.Components;
+using MudBlazor.Services;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
+using Windows.Foundation;
+using Windows.Foundation.Collections;
+
+// To learn more about WinUI, the WinUI project structure,
+// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace PulsePanel.App
 {
+    /// <summary>
+    /// An empty window that can be used on its own or navigated to within a Frame.
+    /// </summary>
     public sealed partial class MainWindow : Window
     {
         public MainWindow()
         {
             this.InitializeComponent();
+            var task=new Task(()=> {
+                var builder = WebApplication.CreateBuilder();
 
-            var state = App.Services.GetService(typeof(PulsePanel.App.State.AppState)) as PulsePanel.App.State.AppState;
-            var vm = new MainViewModel(App.NavigationService, state!);
-            if (this.Content is FrameworkElement root)
-            {
-                root.DataContext = vm;
-            }
+                // Add services to the container.
+                builder.Services.AddRazorComponents()
+     .AddInteractiveServerComponents();
+                builder.Services.AddMudServices();
 
-            // Initialize navigation
-            App.NavigationService.Initialize(MainFrame);
-            App.NavigationService.Navigate(typeof(ServersPage));
+                builder.WebHost.UseUrls("http://*:5555");
+                var app = builder.Build();
+
+                // Configure the HTTP request pipeline.
+
+
+                app.UseStaticFiles();
+                
+                app.UseRouting();
+                app.UseAntiforgery();
+                app.MapRazorComponents<PulsePanel.App.Components.App>()
+    .AddInteractiveServerRenderMode();
+
+                app.Run();
+
+            }, TaskCreationOptions.LongRunning);
+            task.Start();
         }
+
+        
     }
 }

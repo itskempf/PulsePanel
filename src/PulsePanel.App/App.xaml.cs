@@ -1,49 +1,51 @@
-using System.Threading;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.UI.Xaml;
-using PulsePanel.Core.Extensions;
-using PulsePanel.Core.Services;
-using System;
-using System.IO;
-using PulsePanel.App.State;
-using PulsePanel.App.ViewModels;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace PulsePanel.App
 {
+    /// <summary>
+    /// Provides application-specific behavior to supplement the default Application class.
+    /// </summary>
     public partial class App : Application
     {
-        public static IServiceProvider Services { get; private set; } = default!;
-        private CancellationTokenSource? _healthCts;
+        private Window window = Window.Current;
 
+        /// <summary>
+        /// Initializes the singleton application object.  This is the first line of authored code
+        /// executed, and as such is the logical equivalent of main() or WinMain().
+        /// </summary>
         public App()
         {
-            InitializeComponent();
-            var sc = new ServiceCollection();
-            sc.AddPulsePanelServices();
-            Services = sc.BuildServiceProvider();
+            this.InitializeComponent();
         }
 
-        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        /// <summary>
+        /// Invoked when the application is launched normally by the end user.  Other entry points
+        /// will be used such as when the application is launched to open a specific file.
+        /// </summary>
+        /// <param name="e">Details about the launch request and process.</param>
+        protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            // Start health monitor
-            var health = Services.GetRequiredService<IHealthMonitorService>();
-            _healthCts = new CancellationTokenSource();
-            _ = health.StartAsync(_healthCts.Token);
+            window ??= new Window();
 
-            base.OnLaunched(args);
-            // Initialize shared state
-            var appState = Services.GetRequiredService<AppState>();
-            var serverService = Services.GetRequiredService<IServerService>();
-            _ = appState.InitializeAsync(serverService);
+            if (window.Content is not Frame rootFrame)
+            {
+                rootFrame = new Frame();
+                rootFrame.NavigationFailed += OnNavigationFailed;
+                window.Content = rootFrame;
+            }
 
-            var window = new MainWindow();
+            _ = rootFrame.Navigate(typeof(MainPage), e.Arguments);
             window.Activate();
         }
 
-        protected override void OnSuspending(object sender, SuspendingEventArgs e)
+        /// <summary>
+        /// Invoked when Navigation to a certain page fails
+        /// </summary>
+        /// <param name="sender">The Frame which failed navigation</param>
+        /// <param name="e">Details about the navigation failure</param>
+        void OnNavigationFailed(object sender, NavigationFailedEventArgs e)
         {
-            _healthCts?.Cancel();
-            base.OnSuspending(sender, e);
+            throw new Exception("Failed to load Page " + e.SourcePageType.FullName);
         }
     }
 }

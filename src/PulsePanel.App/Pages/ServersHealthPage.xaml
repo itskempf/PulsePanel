@@ -1,0 +1,30 @@
+<Page
+    x:Class="PulsePanel.App.Pages.ServersHealthPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:vm="using:PulsePanel.App.ViewModels">
+
+    <ScrollViewer>
+        <ItemsControl ItemsSource="{x:Bind ViewModel.Servers}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:ServerHealthViewModel">
+                    <Border BorderBrush="Gray" BorderThickness="1" CornerRadius="6" Padding="8" Margin="4">
+                        <StackPanel>
+                            <TextBlock Text="{x:Bind Name}" FontWeight="Bold"/>
+                            <TextBlock Text="{x:Bind StatusText}"/>
+                            <TextBlock Text="{x:Bind CpuPercent, StringFormat='CPU: {0:F1}%'}"/>
+                            <TextBlock Text="{x:Bind RamPercent, StringFormat='RAM: {0:F1}%'}"/>
+                            <TextBlock Text="{x:Bind DiskPercent, StringFormat='Disk: {0:F1}%'}"/>
+                            <TextBlock Text="{x:Bind NetMbps, StringFormat='Net: {0:F1} MB/s'}"/>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Start" Command="{x:Bind StartCommand}"/>
+                                <Button Content="Stop" Command="{x:Bind StopCommand}"/>
+                                <Button Content="Restart" Command="{x:Bind RestartCommand}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+</Page>
