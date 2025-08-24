@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Pulse Panel (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Pulse Panel (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
