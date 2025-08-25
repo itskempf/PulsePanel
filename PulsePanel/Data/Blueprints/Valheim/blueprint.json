@@ -1,0 +1,8 @@
+{
+  "Id": "valheim",
+  "Name": "Valheim",
+  "ProvisionerType": "SteamCMD",
+  "SteamAppId": 896660,
+  "ExecutablePath": "valheim_server.exe",
+  "Arguments": "-nographics -batchmode -port {{PORT}} -name \"{{SERVER_NAME}}\" -world \"{{WORLD_NAME}}\" -password \"{{PASSWORD}}\" -public 1"
+}

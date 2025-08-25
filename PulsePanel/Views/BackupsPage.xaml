@@ -1,0 +1,33 @@
+
+<Page x:Class="PulsePanel.Views.BackupsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      Background="{StaticResource BackgroundBrush}">
+  <Grid Margin="16">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+    </Grid.RowDefinitions>
+    <TextBlock Text="Backups" FontSize="22" FontWeight="Bold"/>
+
+    <StackPanel Grid.Row="1" Orientation="Horizontal" >
+      <StackPanel.Resources><Style TargetType="Button"><Setter Property="Margin" Value="6,0,0,0"/></Style></StackPanel.Resources>
+      <TextBlock Text="Target Server Id:" VerticalAlignment="Center"/>
+      <TextBox Width="320" Text="{Binding Target}"/>
+      <Button Content="Create Backup" Command="{Binding Create}"/>
+      <Button Content="Refresh" Command="{Binding Refresh}"/>
+    </StackPanel>
+
+    <ListView Grid.Row="2" ItemsSource="{Binding Items}">
+      <ListView.View>
+        <GridView>
+          <GridViewColumn Header="Time" DisplayMemberBinding="{Binding Timestamp}" Width="220"/>
+          <GridViewColumn Header="ServerId" DisplayMemberBinding="{Binding TargetServerId}" Width="300"/>
+          <GridViewColumn Header="Size (bytes)" DisplayMemberBinding="{Binding SizeInBytes}" Width="140"/>
+          <GridViewColumn Header="Path" DisplayMemberBinding="{Binding FilePath}" Width="400"/>
+        </GridView>
+      </ListView.View>
+    </ListView>
+  </Grid>
+</Page>

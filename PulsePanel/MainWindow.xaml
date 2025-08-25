@@ -1,0 +1,40 @@
+
+<Window x:Class="PulsePanel.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Pulse Panel" Height="720" Width="1280"
+        Background="#FF1A1A1A"
+        WindowStartupLocation="CenterScreen">
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Themes/SharedResources.xaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="220"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+    <Grid Grid.Column="0" Background="{StaticResource SidebarBackgroundBrush}">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto"/>
+      </Grid.RowDefinitions>
+      <TextBlock Grid.Row="0" Text="Pulse Panel" FontSize="24" FontWeight="Bold" Foreground="{StaticResource WhiteTextBrush}" Margin="20"/>
+      <StackPanel Grid.Row="1" Margin="0,20,0,0">
+        <RadioButton GroupName="Nav" Content="Dashboard"  Tag="DashboardPage"  Style="{StaticResource NavRadioButtonStyle}" IsChecked="True" Click="Nav_Click"/>
+        <RadioButton GroupName="Nav" Content="Marketplace" Tag="MarketplacePage" Style="{StaticResource NavRadioButtonStyle}" Click="Nav_Click"/>
+        <RadioButton GroupName="Nav" Content="Scheduler"  Tag="SchedulerPage"  Style="{StaticResource NavRadioButtonStyle}" Click="Nav_Click"/>
+        <RadioButton GroupName="Nav" Content="Backups"    Tag="BackupsPage"    Style="{StaticResource NavRadioButtonStyle}" Click="Nav_Click"/>
+      </StackPanel>
+      <StackPanel Grid.Row="2" VerticalAlignment="Bottom">
+        <RadioButton GroupName="Nav" Content="Settings" Tag="SettingsPage" Style="{StaticResource NavRadioButtonStyle}" Click="Nav_Click"/>
+        <TextBlock Text="v1.0" Foreground="#FF6A6A6A" FontSize="10" Margin="20,10" HorizontalAlignment="Center"/>
+      </StackPanel>
+    </Grid>
+    <Frame x:Name="ContentFrame" Grid.Column="1" NavigationUIVisibility="Hidden"/>
+  </Grid>
+</Window>

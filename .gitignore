@@ -1,0 +1,49 @@
+# Build outputs
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+
+# VS
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+*.iml
+
+# Logs
+*.log
+
+# Others
+*.db
+*.opendb
+*.pidb
+*.svclog
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# WPF generated
+*.g.cs
+*.g.i.cs
+
+# Test
+TestResult*/
+*.coverage*
+
+# Tooling
+/.vscode/
+/.devcontainer/
+
+# Local tools
+/.config/dotnet-tools.json
