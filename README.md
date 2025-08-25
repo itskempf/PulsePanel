@@ -27,11 +27,18 @@ PulsePanel is a .NET 9 WPF desktop application for managing game server instance
 - Scheduling via SchedulerService
 - Provisioning via ProvisioningService and BlueprintService
 - Live console output routed to the selected instance in ServersViewModel
+- Settings page for paths (Server Install, Backups), update check placeholder, and app version display
 
 ## Paths and data
 - Blueprints: `PulsePanel/Data/Blueprints` (copied to output)
 - Default install root: `C:\PulsePanel\Servers\<guid>`
 - Logs: `Data/provenance.log`
+
+## Settings
+Open the Settings page from the app sidebar to configure:
+- Server install path
+- Backups path
+- Check for updates (placeholder)
 
 ## Contributing
 - Create a feature branch from `main`
