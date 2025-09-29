@@ -1,0 +1,36 @@
+<UserControl x:Class="PulsePanel.ConfigTabControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" Text="Configuration Editor" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+        
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock Text="Config File:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <ComboBox Name="ConfigFileCombo" Width="200" SelectionChanged="ConfigFile_SelectionChanged"/>
+            <Button Name="RefreshBtn" Content="🔄 Refresh" Margin="10,0,0,0" Padding="8,4" Click="Refresh_Click"/>
+            <Button Name="SaveBtn" Content="💾 Save" Margin="10,0,0,0" Padding="8,4" Click="Save_Click" IsEnabled="False"/>
+        </StackPanel>
+        
+        <Border Grid.Row="2" BorderBrush="#E0E0E0" BorderThickness="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+                <TextBox Name="ConfigEditor" FontFamily="Consolas" FontSize="12" 
+                         AcceptsReturn="True" AcceptsTab="True" TextWrapping="NoWrap"
+                         Background="#1E1E1E" Foreground="#D4D4D4" 
+                         Padding="10" BorderThickness="0"
+                         TextChanged="ConfigEditor_TextChanged"/>
+            </ScrollViewer>
+        </Border>
+        
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+            <Button Name="TemplateBtn" Content="📋 Load Template" Padding="8,4" Margin="0,0,10,0" Click="Template_Click"/>
+            <Button Name="BackupBtn" Content="💾 Backup" Padding="8,4" Click="Backup_Click"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

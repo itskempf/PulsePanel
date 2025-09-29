@@ -1,0 +1,88 @@
+<UserControl x:Class="PulsePanel.ScheduleTabControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+            <TextBlock Text="Automated Tasks &amp; Scheduling" FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
+            
+            <!-- Automated Updates -->
+            <Border Background="#E3F2FD" BorderBrush="#2196F3" BorderThickness="1" Padding="15" Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="🔄 Automated Updates" FontWeight="Bold" FontSize="14" Margin="0,0,0,10"/>
+                    <CheckBox Name="AutoUpdateEnabled" Content="Enable automatic updates" Margin="0,0,0,5"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Schedule:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox Name="UpdateScheduleCombo" Width="150">
+                            <ComboBoxItem Content="Daily at 3:00 AM"/>
+                            <ComboBoxItem Content="Weekly (Monday 3:00 AM)"/>
+                            <ComboBoxItem Content="Weekly (Sunday 3:00 AM)"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <CheckBox Name="UpdateValidateEnabled" Content="Run validation after update" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Automated Restarts -->
+            <Border Background="#FFF3E0" BorderBrush="#FF9800" BorderThickness="1" Padding="15" Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="🔄 Automated Restarts" FontWeight="Bold" FontSize="14" Margin="0,0,0,10"/>
+                    <CheckBox Name="AutoRestartEnabled" Content="Enable automatic restarts" Margin="0,0,0,5"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Interval:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox Name="RestartIntervalCombo" Width="150">
+                            <ComboBoxItem Content="Every 6 hours"/>
+                            <ComboBoxItem Content="Every 12 hours"/>
+                            <ComboBoxItem Content="Every 24 hours"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <CheckBox Name="RestartWarningEnabled" Content="Send warning message before restart" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+            
+            <!-- Automated Backups -->
+            <Border Background="#E8F5E8" BorderBrush="#4CAF50" BorderThickness="1" Padding="15" Margin="0,0,0,15">
+                <StackPanel>
+                    <TextBlock Text="💾 Automated Backups" FontWeight="Bold" FontSize="14" Margin="0,0,0,10"/>
+                    <CheckBox Name="AutoBackupEnabled" Content="Enable automatic backups" Margin="0,0,0,5"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Schedule:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox Name="BackupScheduleCombo" Width="150">
+                            <ComboBoxItem Content="Daily"/>
+                            <ComboBoxItem Content="Weekly"/>
+                            <ComboBoxItem Content="Before Updates"/>
+                        </ComboBox>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Backup Path:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox Name="BackupPathBox" Width="200" Text="C:\ServerBackups"/>
+                        <Button Content="..." Width="30" Margin="5,0,0,0" Click="BrowseBackupPath_Click"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,5">
+                        <TextBlock Text="Keep backups:" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox Name="BackupRetentionCombo" Width="100">
+                            <ComboBoxItem Content="7 days"/>
+                            <ComboBoxItem Content="30 days"/>
+                            <ComboBoxItem Content="90 days"/>
+                        </ComboBox>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+            <!-- Manual Actions -->
+            <Border Background="#F3E5F5" BorderBrush="#9C27B0" BorderThickness="1" Padding="15">
+                <StackPanel>
+                    <TextBlock Text="🔧 Manual Actions" FontWeight="Bold" FontSize="14" Margin="0,0,0,10"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button Name="BackupNowBtn" Content="💾 Backup Now" Padding="8,4" Margin="0,0,10,0" Click="BackupNow_Click"/>
+                        <Button Name="TestScheduleBtn" Content="🧪 Test Schedule" Padding="8,4" Click="TestSchedule_Click"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
+            <!-- Save Settings -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+                <Button Name="SaveScheduleBtn" Content="💾 Save Settings" Padding="12,6" Click="SaveSchedule_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
