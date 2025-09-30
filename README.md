@@ -1,35 +1,45 @@
-# PulsePanel - SteamCMD Game Server Manager
+# PulsePanel - Professional Game Server Manager
 
-A modern WPF dashboard application for managing game servers using SteamCMD with an intuitive interface and advanced features.
+A modern WPF application for managing game servers using SteamCMD with an intuitive interface and advanced features. Supports 40+ popular games with comprehensive configuration management.
+
+![PulsePanel](https://img.shields.io/badge/Version-1.0-blue) ![.NET](https://img.shields.io/badge/.NET-8.0-purple) ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey)
 
 ## ✨ Key Features
 
-### Dashboard-Centric Design
-- **Always-visible server list** and console output for instant situational awareness
-- **Vertical tab navigation** for server management when a server is selected
-- **Color-coded console output** (Red for errors, Yellow for warnings, White for standard output)
+### 🎮 Extensive Game Support (40+ Games)
+- **Source Engine**: Counter-Strike 2, Garry's Mod, Team Fortress 2, Left 4 Dead 2, Half-Life
+- **Military/Tactical**: Arma 3, Squad, Hell Let Loose, Insurgency: Sandstorm, Post Scriptum
+- **Survival/Crafting**: Rust, 7 Days to Die, Valheim, ARK (both versions), Project Zomboid, Conan Exiles, The Forest
+- **Space/Sci-Fi**: Space Engineers, Satisfactory, Astroneer
+- **Racing**: BeamNG.drive, Assetto Corsa, rFactor 2
+- **Popular**: Palworld, V Rising, DayZ, Unturned, Enshrouded, Foundry, Farming Simulator 22
+
+### 📝 Professional Configuration Editor
+- **Syntax-highlighted editor** with dark theme and Consolas font
+- **Game-specific templates** for instant configuration
+- **Backup system** with timestamp-based versioning
+- **Real-time change tracking** and validation
+- **Multi-file support** for complex game configurations
+
+### 🖥️ Dashboard-Centric Design
+- **Always-visible server list** with real-time status updates
+- **Color-coded console output** (Red for errors, Yellow for warnings, White for info)
+- **Vertical tab navigation** for server management
 - **Modern UI** with professional styling and intuitive controls
 
-### Core Server Management
+### ⚙️ Core Server Management
 - **One-click Start/Stop/Restart** with instant control
 - **Intelligent Update/Validate** using SteamCMD with progress tracking
 - **Automatic Server Detection** - scans your system for existing game servers
 - **Configurable SteamCMD Path** - no more hardcoded paths
-- **Real-time monitoring** with system resource tracking
+- **Real-time monitoring** with process tracking and crash detection
 
-### Server Management Tabs
-1. **📊 Status & Info**: Real-time server status, per-process CPU/RAM monitoring, crash detection, and quick actions
-2. **⚙️ Configuration**: In-app config file editor with syntax highlighting and templates
-3. **🔧 Mods & Workshop**: Steam Workshop ID manager with automatic mod downloads
-4. **⏰ Scheduling**: Automated updates, restarts, and backups with flexible scheduling
-
-### Supported Games
-- Counter-Strike 2
-- Garry's Mod
-- Team Fortress 2
-- Left 4 Dead 2
-- Half-Life Dedicated Server
-- Any Source engine game
+### 🔧 Advanced Features
+- **Toast Notifications** for all server events and crashes
+- **Settings Persistence** - all configurations saved automatically
+- **Process Monitoring** with CPU and RAM tracking
+- **Firewall Management** for automatic port configuration
+- **Template System** with pre-built configs for all supported games
 
 ## 🚀 Quick Start
 
@@ -37,112 +47,158 @@ A modern WPF dashboard application for managing game servers using SteamCMD with
 1. **SteamCMD**: Download from [Valve Developer Community](https://developer.valvesoftware.com/wiki/SteamCMD)
 2. **.NET 8.0 Runtime**: Required for the application
 
+### Installation
+1. Download the latest release from [Releases](https://github.com/itskempf/PulsePanel/releases)
+2. Extract to your desired location
+3. Run `PulsePanel.exe`
+
 ### First Time Setup
 1. Launch PulsePanel
 2. Click **⚙️ Settings** to configure your SteamCMD path
 3. Click **Scan Servers** to automatically detect existing installations
-4. Or click **Add Server** to manually add a new server
+4. Or click **Add Server** to manually add a new server from 40+ supported games
 
 ## 📖 Usage Guide
 
 ### Adding Servers
-- **Manual**: Click "Add Server" → Select game → Configure paths and settings
+- **Manual**: Click "Add Server" → Select from 40+ games → Configure paths and settings
 - **Automatic**: Click "Scan Servers" to detect existing installations
 
 ### Managing Servers
 1. **Select a server** from the left panel
 2. **Use toolbar buttons** for Start/Stop/Restart/Update operations
 3. **Navigate tabs** to access different management features:
-   - **Status**: Monitor server health and resources
-   - **Config**: Edit server configurations
-   - **Mods**: Manage Workshop content
-   - **Schedule**: Set up automated tasks
+   - **Status**: Monitor server health, resources, and quick actions
+   - **Config**: Edit server configurations with templates and syntax highlighting
+   - **Mods**: Manage Workshop content and mod installations
+   - **Schedule**: Set up automated tasks and backups
 
-### Monitoring
-- **Console Output**: Real-time logs with color coding and timestamps
-- **Server Status**: Live status updates in the server list
-- **System Resources**: CPU, RAM, and disk usage monitoring
+### Configuration Management
+- **File Editor**: Professional text editor with syntax highlighting
+- **Templates**: Pre-built configurations for all supported games
+- **Backups**: Automatic timestamped backups before changes
+- **Validation**: Real-time change tracking and error detection
 
-## ⚙️ Configuration
+## 🎯 Supported Games & Templates
 
-### Settings (⚙️ Settings Button)
-- **SteamCMD Path**: Location of your steamcmd.exe
-- **Default Install Path**: Base directory for new server installations
+### Source Engine Games
+- Counter-Strike 2 (`server.cfg`)
+- Garry's Mod (`server.cfg`)
+- Team Fortress 2 (`server.cfg`)
+- Left 4 Dead 2 (`server.cfg`)
+- Half-Life Dedicated Server (`server.cfg`)
 
-### Default Paths
-- **SteamCMD**: `C:\steamcmd\steamcmd.exe`
-- **Server Installs**: `C:\GameServers\[GameName]`
-- **Default Port**: 27015 (configurable per server)
+### Military/Tactical Games
+- Arma 3 (`server.cfg`)
+- Squad (`Server.cfg`)
+- Hell Let Loose (startup parameters)
+- Insurgency: Sandstorm (startup parameters)
+- Post Scriptum (startup parameters)
+
+### Survival/Crafting Games
+- Rust (`server.cfg`)
+- 7 Days to Die (`serverconfig.xml`)
+- Valheim (`start_server.bat`)
+- ARK: Survival Evolved (`GameUserSettings.ini`)
+- ARK: Survival Ascended (`GameUserSettings.ini`)
+- Project Zomboid (startup parameters)
+- Conan Exiles (startup parameters)
+- The Forest (startup parameters)
+
+### Space/Sci-Fi Games
+- Space Engineers (startup parameters)
+- Satisfactory (startup parameters)
+- Astroneer (startup parameters)
+
+### Other Popular Games
+- Palworld (startup parameters)
+- V Rising (startup parameters)
+- DayZ (`serverDZ.cfg`)
+- Unturned (startup parameters)
+- Enshrouded (startup parameters)
+- Foundry (startup parameters)
+- Farming Simulator 22 (startup parameters)
+
+## ⚙️ Configuration Templates
+
+Each supported game includes professionally crafted configuration templates:
+
+- **Counter-Strike 2**: Complete server.cfg with competitive settings
+- **Garry's Mod**: Sandbox configuration with prop limits and permissions
+- **Arma 3**: Full server.cfg with mission rotation and BattlEye settings
+- **Rust**: Comprehensive server configuration with PvP/PvE options
+- **7 Days to Die**: Complete XML configuration with all game settings
+- **Valheim**: Batch file template with server parameters
+- **ARK**: GameUserSettings.ini with multipliers and server options
+- **DayZ**: Complete serverDZ.cfg with all gameplay settings
 
 ## 🔧 Advanced Features
 
-### Integrated Resource Monitoring
-- **Per-Server Process Tracking**: Real-time CPU and RAM usage for individual server processes
-- **Instant Crash Detection**: Aggressive toast notifications when servers crash unexpectedly
-- **Live Resource Graphs**: Visual progress bars showing current system usage
+### Real-time Process Monitoring
+- **CPU and RAM tracking** for individual server processes
+- **Crash detection** with instant toast notifications
+- **Resource usage alerts** and performance monitoring
 
-### Configuration File Editor (Killer Feature)
-- **In-App Editor**: Load and edit game config files directly with syntax highlighting
-- **Config Templates**: Pre-built templates for popular games (CS2, Garry's Mod, etc.)
-- **Automatic Backup**: Create timestamped backups before making changes
-- **Multi-File Support**: Detect and edit multiple config files per server
+### Professional Configuration Editor
+- **Syntax highlighting** with dark theme
+- **Change tracking** with unsaved changes warnings
+- **Template system** with game-specific configurations
+- **Backup creation** with timestamp-based versioning
+- **Multi-file support** for complex game setups
 
-### Mod/Workshop Manager
-- **Direct Workshop ID Input**: Paste Steam Workshop IDs for automatic downloads
-- **Batch Processing**: Download multiple mods simultaneously
-- **Mod Directory Sync**: Automatic detection and file browser for mod folders
-- **Validation Tools**: Verify mod integrity and compatibility
+### Automated Management
+- **Server scanning** for automatic detection
+- **Settings persistence** across application restarts
+- **Toast notifications** for all events and errors
+- **Firewall management** for automatic port configuration
 
-### Scheduled Tasks
-- **Automated Updates**: Schedule nightly or weekly server updates
-- **Automated Restarts**: Rolling restarts every 6/12/24 hours to clear memory leaks
-- **Automated Backups**: Full server backups with configurable retention policies
-- **Flexible Scheduling**: Multiple timing options for all automated tasks
+## 🛠️ System Requirements
 
-### Simplified Firewall Management
-- **One-Click Port Opening**: Automatic Windows Firewall rule creation
-- **UDP/TCP Support**: Creates both inbound and outbound rules
-- **Rule Management**: Automatic cleanup when servers are removed
+- **OS**: Windows 10/11
+- **Runtime**: .NET 8.0
+- **Dependencies**: SteamCMD installed
+- **Permissions**: Administrator privileges recommended for firewall management
 
-### Automatic Server Detection
-Scans common directories for existing game server installations:
-- `C:\GameServers`
-- `C:\SteamCMD`
-- Steam installation directories
-- Custom paths
+## 📝 Development
 
-### Color-Coded Console
-- 🔴 **Red**: Errors, crashes, failures
-- 🟡 **Yellow**: Warnings, alerts
-- ⚪ **White**: Standard output, information
-- 🔘 **Gray**: Timestamps
+### Building from Source
+```bash
+git clone https://github.com/itskempf/PulsePanel.git
+cd PulsePanel
+dotnet restore
+dotnet build
+```
 
-### Quick Actions (Status Tab)
-- **📄 View Logs**: Open server log directory
-- **📁 Open Folder**: Open server installation folder
-- **🔗 Connect**: Launch Steam and connect to server
-- **🛡️ Open Firewall**: Automatically create firewall rules for server port
+### Project Structure
+- **Core Classes**: GameServer, SteamCmdManager, ProcessMonitor
+- **UI Components**: MainWindow, StatusTabControl, ConfigTabControl, ModsTabControl, ScheduleTabControl
+- **Configuration**: ConfigTemplates, SettingsManager
+- **Utilities**: ServerScanner, FirewallManager, ToastNotification
 
-## 🛠️ Troubleshooting
+## 🤝 Contributing
 
-### Common Issues
-1. **SteamCMD not found**: Use Settings to set correct path
-2. **Server won't start**: Check executable path and permissions
-3. **Update fails**: Verify SteamCMD installation and internet connection
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-### System Requirements
-- Windows 10/11
-- .NET 8.0 Runtime
-- SteamCMD installed
-- Appropriate firewall rules for server ports
+## 📄 License
 
-## 📝 Notes
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-- Servers run as separate processes for stability with real-time monitoring
-- Automatic process cleanup on application exit
-- Instant crash detection with toast notifications
-- Settings and schedules are saved between sessions
-- Automatic firewall management (requires administrator privileges)
-- Config file backups are created automatically
-- Workshop mods are downloaded to appropriate game directories
-- Always test server configurations before production use
+## 🙏 Acknowledgments
+
+- **Valve Corporation** for SteamCMD
+- **Game Developers** for creating amazing server software
+- **Community** for feedback and feature requests
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/itskempf/PulsePanel/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/itskempf/PulsePanel/discussions)
+- **Wiki**: [Project Wiki](https://github.com/itskempf/PulsePanel/wiki)
+
+---
+
+**PulsePanel** - Professional Game Server Management Made Simple 🎮
