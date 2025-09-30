@@ -23,10 +23,50 @@
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,5">
             <Label Content="Game:" Width="120"/>
             <ComboBox Name="GameComboBox" Width="300" SelectionChanged="GameComboBox_SelectionChanged">
+                <!-- Source Engine Games -->
                 <ComboBoxItem Content="Counter-Strike 2" Tag="730"/>
                 <ComboBoxItem Content="Garry's Mod" Tag="4020"/>
                 <ComboBoxItem Content="Team Fortress 2" Tag="232250"/>
                 <ComboBoxItem Content="Left 4 Dead 2" Tag="222860"/>
+                <ComboBoxItem Content="Half-Life Dedicated Server" Tag="90"/>
+                
+                <!-- Military/Tactical Games -->
+                <ComboBoxItem Content="Arma 3" Tag="233780"/>
+                <ComboBoxItem Content="Squad" Tag="403240"/>
+                <ComboBoxItem Content="Post Scriptum" Tag="736220"/>
+                <ComboBoxItem Content="Hell Let Loose" Tag="686810"/>
+                <ComboBoxItem Content="Insurgency: Sandstorm" Tag="581330"/>
+                
+                <!-- Survival/Crafting Games -->
+                <ComboBoxItem Content="Rust" Tag="258550"/>
+                <ComboBoxItem Content="7 Days to Die" Tag="294420"/>
+                <ComboBoxItem Content="The Forest" Tag="556450"/>
+                <ComboBoxItem Content="Valheim" Tag="896660"/>
+                <ComboBoxItem Content="Project Zomboid" Tag="380870"/>
+                <ComboBoxItem Content="Conan Exiles" Tag="443030"/>
+                <ComboBoxItem Content="ARK: Survival Ascended" Tag="2430930"/>
+                <ComboBoxItem Content="ARK: Survival Evolved" Tag="376030"/>
+                
+                <!-- Space/Sci-Fi Games -->
+                <ComboBoxItem Content="Space Engineers" Tag="298740"/>
+                <ComboBoxItem Content="Astroneer" Tag="728470"/>
+                <ComboBoxItem Content="Satisfactory" Tag="526870"/>
+                
+                <!-- Racing Games -->
+                <ComboBoxItem Content="BeamNG.drive" Tag="284160"/>
+                <ComboBoxItem Content="Assetto Corsa" Tag="244210"/>
+                <ComboBoxItem Content="rFactor 2" Tag="365960"/>
+                
+                <!-- Other Popular Games -->
+                <ComboBoxItem Content="Palworld" Tag="2394010"/>
+                <ComboBoxItem Content="Enshrouded" Tag="1203620"/>
+                <ComboBoxItem Content="V Rising" Tag="1604030"/>
+                <ComboBoxItem Content="DayZ" Tag="223350"/>
+                <ComboBoxItem Content="Unturned" Tag="304930"/>
+                <ComboBoxItem Content="Foundry" Tag="983870"/>
+                <ComboBoxItem Content="Farming Simulator 22" Tag="1248130"/>
+                <ComboBoxItem Content="Vintage Story" Tag="559080"/>
+                <ComboBoxItem Content="Eco" Tag="382310"/>
             </ComboBox>
         </StackPanel>
         

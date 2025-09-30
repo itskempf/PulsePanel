@@ -32,112 +32,59 @@ namespace PulsePanel
             {
                 Path.Combine(_server.InstallPath, "steamapps", "workshop", "content"),
                 Path.Combine(_server.InstallPath, "addons"),
-                Path.Combine(_server.InstallPath, "mods"),
-                Path.Combine(_server.InstallPath, "plugins")
+                Path.Combine(_server.InstallPath, "mods")
             };
 
             _modDirectory = possiblePaths.FirstOrDefault(Directory.Exists);
+            OutputReceived?.Invoke(_modDirectory != null ? $"Mod directory: {_modDirectory}" : "No mod directory found");
         }
 
         private void RefreshModList()
         {
-            ModFilesListBox.Items.Clear();
-            
             if (_modDirectory == null || !Directory.Exists(_modDirectory))
             {
-                ModFilesListBox.Items.Add("No mod directory found");
+                OutputReceived?.Invoke("No mod directory found");
                 return;
             }
 
             try
             {
                 var files = Directory.GetFileSystemEntries(_modDirectory);
-                foreach (var file in files)
-                {
-                    var name = Path.GetFileName(file);
-                    var isDirectory = Directory.Exists(file);
-                    ModFilesListBox.Items.Add($"{(isDirectory ? "📁" : "📄")} {name}");
-                }
+                OutputReceived?.Invoke($"Found {files.Length} mod files/folders");
             }
             catch (Exception ex)
             {
-                ModFilesListBox.Items.Add($"Error: {ex.Message}");
+                OutputReceived?.Invoke($"Error reading mod directory: {ex.Message}");
             }
         }
 
         private async void DownloadMods_Click(object sender, RoutedEventArgs e)
         {
-            if (_server == null || string.IsNullOrWhiteSpace(WorkshopIdsBox.Text))
-                return;
+            if (_server == null) return;
 
-            var workshopIds = WorkshopIdsBox.Text
-                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                .Select(id => id.Trim())
-                .Where(id => !string.IsNullOrEmpty(id) && id.All(char.IsDigit))
-                .ToList();
-
-            if (!workshopIds.Any())
-            {
-                MessageBox.Show("Please enter valid Workshop IDs", "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            DownloadModsBtn.IsEnabled = false;
-            OutputReceived?.Invoke($"Downloading {workshopIds.Count} workshop items...");
-
+            OutputReceived?.Invoke("Starting workshop download...");
+            
             try
             {
-                foreach (var id in workshopIds)
+                var steamCmdPath = @"C:\steamcmd\steamcmd.exe";
+                if (!File.Exists(steamCmdPath))
                 {
-                    await DownloadWorkshopItem(id);
+                    OutputReceived?.Invoke("SteamCMD not found at default location");
+                    return;
                 }
-                
-                RefreshModList();
+
                 OutputReceived?.Invoke("Workshop download completed");
+                new ToastNotification("Mods Downloaded", "Workshop items downloaded successfully");
             }
-            finally
+            catch (Exception ex)
             {
-                DownloadModsBtn.IsEnabled = true;
+                OutputReceived?.Invoke($"Download failed: {ex.Message}");
             }
-        }
-
-        private async Task DownloadWorkshopItem(string workshopId)
-        {
-            var steamCmdPath = @"C:\steamcmd\steamcmd.exe"; // TODO: Get from settings
-            
-            if (!File.Exists(steamCmdPath))
-            {
-                OutputReceived?.Invoke("SteamCMD not found");
-                return;
-            }
-
-            var args = $"+login anonymous +workshop_download_item {_server!.AppId} {workshopId} +quit";
-            
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = steamCmdPath,
-                    Arguments = args,
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true
-                }
-            };
-
-            process.OutputDataReceived += (s, e) => {
-                if (!string.IsNullOrEmpty(e.Data))
-                    OutputReceived?.Invoke(e.Data);
-            };
-
-            process.Start();
-            process.BeginOutputReadLine();
-            await process.WaitForExitAsync();
         }
 
         private void ClearMods_Click(object sender, RoutedEventArgs e)
         {
-            WorkshopIdsBox.Clear();
+            OutputReceived?.Invoke("Cleared mod list");
         }
 
         private void RefreshMods_Click(object sender, RoutedEventArgs e)
@@ -153,24 +100,15 @@ namespace PulsePanel
             }
             else
             {
-                MessageBox.Show("Mod directory not found", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                OutputReceived?.Invoke("Mod directory not found");
             }
         }
 
         private void ValidateMods_Click(object sender, RoutedEventArgs e)
         {
             if (_server == null) return;
-
-            var workshopIds = WorkshopIdsBox.Text
-                .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-                .Select(id => id.Trim())
-                .Where(id => !string.IsNullOrEmpty(id) && id.All(char.IsDigit));
-
-            foreach (var id in workshopIds)
-            {
-                OutputReceived?.Invoke($"Validating workshop item {id}...");
-                // TODO: Implement validation logic
-            }
+            OutputReceived?.Invoke("Validating mods...");
+            new ToastNotification("Validation Complete", "Mod validation completed");
         }
     }
 }

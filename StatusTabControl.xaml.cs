@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -42,19 +41,17 @@ namespace PulsePanel
         {
             Dispatcher.Invoke(() =>
             {
-                CpuProgressBar.Value = Math.Min(cpuPercent, 100);
-                CpuText.Text = $"{cpuPercent:F1}%";
-                
-                var ramMB = ramBytes / (1024 * 1024);
-                RamProgressBar.Value = Math.Min(ramMB / 10, 100); // Assume 1GB max for progress
-                RamText.Text = $"{ramMB} MB";
-                
-                // Update uptime
-                if (server.Status == ServerStatus.Running)
+                try
                 {
-                    var uptime = DateTime.Now - _serverStartTime;
-                    UptimeText.Text = $"{uptime.Days}d {uptime.Hours}h {uptime.Minutes}m";
+                    var ramMB = ramBytes / (1024 * 1024);
+                    
+                    if (server.Status == ServerStatus.Running)
+                    {
+                        var uptime = DateTime.Now - _serverStartTime;
+                        OutputReceived?.Invoke($"Server {server.Name}: CPU {cpuPercent:F1}%, RAM {ramMB} MB, Uptime {uptime.Hours}h {uptime.Minutes}m");
+                    }
                 }
+                catch { }
             });
         }
 
@@ -68,61 +65,30 @@ namespace PulsePanel
             });
         }
 
+
+
         private void UpdateDisplay()
         {
             if (_server == null)
             {
-                ServerNameText.Text = "-";
-                GameNameText.Text = "-";
-                StatusText.Text = "-";
-                PortText.Text = "-";
-                UptimeText.Text = "-";
-                CpuProgressBar.Value = 0;
-                RamProgressBar.Value = 0;
-                CpuText.Text = "0%";
-                RamText.Text = "0 MB";
+                OutputReceived?.Invoke("No server selected");
                 return;
             }
 
-            ServerNameText.Text = _server.Name;
-            GameNameText.Text = _server.GameName;
-            StatusText.Text = _server.Status.ToString();
-            PortText.Text = _server.Port.ToString();
-            
-            // Color-code status
-            StatusText.Foreground = _server.Status switch
-            {
-                ServerStatus.Running => Brushes.Green,
-                ServerStatus.Crashed => Brushes.Red,
-                ServerStatus.Stopped => Brushes.Gray,
-                _ => Brushes.Orange
-            };
-            
-            if (_server.Status != ServerStatus.Running)
-            {
-                UptimeText.Text = "Stopped";
-                CpuProgressBar.Value = 0;
-                RamProgressBar.Value = 0;
-                CpuText.Text = "0%";
-                RamText.Text = "0 MB";
-            }
+            OutputReceived?.Invoke($"Server: {_server.Name} ({_server.GameName}) - Status: {_server.Status} - Port: {_server.Port}");
         }
 
         private void ViewLogs_Click(object sender, RoutedEventArgs e)
         {
-            if (_server != null && Directory.Exists(_server.InstallPath))
+            if (_server != null && System.IO.Directory.Exists(_server.InstallPath))
             {
-                var logPath = Path.Combine(_server.InstallPath, "logs");
-                if (Directory.Exists(logPath))
-                {
-                    Process.Start("explorer.exe", logPath);
-                }
+                Process.Start("explorer.exe", _server.InstallPath);
             }
         }
 
         private void OpenFolder_Click(object sender, RoutedEventArgs e)
         {
-            if (_server != null && Directory.Exists(_server.InstallPath))
+            if (_server != null && System.IO.Directory.Exists(_server.InstallPath))
             {
                 Process.Start("explorer.exe", _server.InstallPath);
             }
@@ -141,7 +107,6 @@ namespace PulsePanel
         {
             if (_server == null) return;
 
-            FirewallBtn.IsEnabled = false;
             var ruleName = $"PulsePanel - {_server.Name}";
             
             try
@@ -157,12 +122,11 @@ namespace PulsePanel
                 else
                 {
                     OutputReceived?.Invoke("Failed to create firewall rules. Run as administrator.");
-                    MessageBox.Show("Failed to create firewall rules. Please run PulsePanel as administrator.", "Firewall Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
-            finally
+            catch (Exception ex)
             {
-                FirewallBtn.IsEnabled = true;
+                OutputReceived?.Invoke($"Firewall error: {ex.Message}");
             }
         }
     }

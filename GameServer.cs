@@ -18,6 +18,7 @@ namespace PulsePanel
         private ServerStatus _status = ServerStatus.Stopped;
         private Process? _serverProcess;
 
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; } = "";
         public string GameName { get; set; } = "";
         public string AppId { get; set; } = "";

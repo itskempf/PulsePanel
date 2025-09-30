@@ -21,6 +21,7 @@ namespace PulsePanel
         public MainWindow()
         {
             InitializeComponent();
+            LoadSettings();
             _steamCmdManager = new SteamCmdManager(_steamCmdPath);
             ServerListBox.ItemsSource = _servers;
             _steamCmdManager.OutputReceived += OnOutputReceived;
@@ -34,6 +35,40 @@ namespace PulsePanel
             // Initialize with Status tab
             TabContent.Content = _statusTab;
             UpdateTabButtons();
+        }
+
+        private void LoadSettings()
+        {
+            var settings = SettingsManager.LoadSettings();
+            _steamCmdPath = settings.SteamCmdPath;
+            
+            foreach (var server in settings.Servers)
+            {
+                server.PropertyChanged += (s, e) => 
+                {
+                    if (e.PropertyName == nameof(GameServer.Status))
+                    {
+                        Dispatcher.Invoke(() => 
+                        {
+                            UpdateCurrentTab();
+                            UpdateButtonStates();
+                        });
+                    }
+                };
+                _servers.Add(server);
+            }
+            
+            OnOutputReceived($"Loaded {settings.Servers.Count} servers from settings");
+        }
+
+        private void SaveSettings()
+        {
+            var settings = new AppSettings
+            {
+                SteamCmdPath = _steamCmdPath,
+                Servers = _servers.ToList()
+            };
+            SettingsManager.SaveSettings(settings);
         }
 
         private void OnOutputReceived(string output)
@@ -76,6 +111,7 @@ namespace PulsePanel
                     }
                 };
                 _servers.Add(dialog.Server);
+                SaveSettings();
                 OnOutputReceived($"Added server: {dialog.Server.Name}");
             }
         }
@@ -106,6 +142,7 @@ namespace PulsePanel
                             _servers.Add(server);
                         }
                     }
+                    SaveSettings();
                     OnOutputReceived($"Found {foundServers.Count} servers");
                 });
             });
@@ -124,6 +161,7 @@ namespace PulsePanel
                 _steamCmdPath = dialog.SteamCmdPath;
                 _steamCmdManager = new SteamCmdManager(_steamCmdPath);
                 _steamCmdManager.OutputReceived += OnOutputReceived;
+                SaveSettings();
                 OnOutputReceived($"Updated SteamCMD path: {_steamCmdPath}");
             }
         }
@@ -246,6 +284,12 @@ namespace PulsePanel
         private void ClearConsole_Click(object sender, RoutedEventArgs e)
         {
             ConsoleOutput.Document.Blocks.Clear();
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            SaveSettings();
+            base.OnClosed(e);
         }
     }
 }
