@@ -26,6 +26,7 @@ namespace PulsePanel
         public string ExecutablePath { get; set; } = "";
         public string StartupArgs { get; set; } = "";
         public int Port { get; set; } = 27015;
+        public bool AutoRestart { get; set; } = false;
 
         public ServerStatus Status
         {

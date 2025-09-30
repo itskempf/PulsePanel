@@ -183,11 +183,11 @@ namespace PulsePanel
                 }
                 else
                 {
-                    // File doesn't exist, show template
+                    // File doesn't exist, show template without creating file
                     var fileName = Path.GetFileName(_currentConfigPath);
                     var template = ConfigTemplates.GetTemplate(_server!.GameName, fileName);
                     _configEditor.Text = template;
-                    OutputReceived?.Invoke($"Created new config from template: {fileName}");
+                    OutputReceived?.Invoke($"Config file not found, showing template: {fileName}");
                 }
                 
                 _hasChanges = false;

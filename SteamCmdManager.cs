@@ -17,57 +17,74 @@ namespace PulsePanel
         {
             if (!File.Exists(_steamCmdPath))
             {
-                OutputReceived?.Invoke("SteamCMD not found. Please install SteamCMD first.");
+                var error = "SteamCMD not found. Please install SteamCMD first.";
+                OutputReceived?.Invoke(error);
+                Logger.LogError(error);
                 return false;
             }
 
             server.Status = ServerStatus.Updating;
             
-            var args = $"+force_install_dir \"{server.InstallPath}\" +login anonymous +app_update {server.AppId} validate +quit";
-            
             try
             {
-                var process = new Process
+                return await RetryHelper.RetryAsync(async () =>
                 {
-                    StartInfo = new ProcessStartInfo
+                    var args = $"+force_install_dir \"{server.InstallPath}\" +login anonymous +app_update {server.AppId} validate +quit";
+                    
+                    var process = new Process
                     {
-                        FileName = _steamCmdPath,
-                        Arguments = args,
-                        UseShellExecute = false,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        CreateNoWindow = true
-                    }
-                };
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = _steamCmdPath,
+                            Arguments = args,
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            CreateNoWindow = true
+                        }
+                    };
 
-                process.OutputDataReceived += (s, e) => {
-                    if (!string.IsNullOrEmpty(e.Data))
-                        OutputReceived?.Invoke(e.Data);
-                };
+                    process.OutputDataReceived += (s, e) => {
+                        if (!string.IsNullOrEmpty(e.Data))
+                            OutputReceived?.Invoke(e.Data);
+                    };
 
-                process.Start();
-                process.BeginOutputReadLine();
-                await process.WaitForExitAsync();
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    await process.WaitForExitAsync();
 
-                server.Status = ServerStatus.Stopped;
-                return process.ExitCode == 0;
+                    if (process.ExitCode != 0)
+                        throw new Exception($"SteamCMD exited with code {process.ExitCode}");
+                        
+                    return true;
+                }, 2, TimeSpan.FromSeconds(5));
             }
             catch (Exception ex)
             {
-                OutputReceived?.Invoke($"Error updating server: {ex.Message}");
-                server.Status = ServerStatus.Stopped;
+                var error = $"Error updating server {server.Name}: {ex.Message}";
+                OutputReceived?.Invoke(error);
+                Logger.LogError(error, ex);
                 return false;
+            }
+            finally
+            {
+                server.Status = ServerStatus.Stopped;
             }
         }
 
         public bool StartServer(GameServer server)
         {
             if (server.Status != ServerStatus.Stopped)
+            {
+                Logger.LogWarning($"Cannot start server {server.Name} - current status: {server.Status}");
                 return false;
+            }
 
             if (!File.Exists(server.ExecutablePath))
             {
-                OutputReceived?.Invoke($"Server executable not found: {server.ExecutablePath}");
+                var error = $"Server executable not found: {server.ExecutablePath}";
+                OutputReceived?.Invoke(error);
+                Logger.LogError(error);
                 return false;
             }
 
@@ -100,12 +117,16 @@ namespace PulsePanel
                 server.ServerProcess = process;
                 server.Status = ServerStatus.Running;
                 
-                OutputReceived?.Invoke($"Server {server.Name} started successfully.");
+                var success = $"Server {server.Name} started successfully.";
+                OutputReceived?.Invoke(success);
+                Logger.LogInfo(success);
                 return true;
             }
             catch (Exception ex)
             {
-                OutputReceived?.Invoke($"Error starting server: {ex.Message}");
+                var error = $"Error starting server {server.Name}: {ex.Message}";
+                OutputReceived?.Invoke(error);
+                Logger.LogError(error, ex);
                 server.Status = ServerStatus.Stopped;
                 return false;
             }

@@ -41,6 +41,8 @@ namespace PulsePanel
 
         private void RefreshModList()
         {
+            ModFilesListBox.Items.Clear();
+            
             if (_modDirectory == null || !Directory.Exists(_modDirectory))
             {
                 OutputReceived?.Invoke("No mod directory found");
@@ -50,6 +52,12 @@ namespace PulsePanel
             try
             {
                 var files = Directory.GetFileSystemEntries(_modDirectory);
+                foreach (var file in files)
+                {
+                    var name = Path.GetFileName(file);
+                    var isDirectory = Directory.Exists(file);
+                    ModFilesListBox.Items.Add($"{(isDirectory ? "📁" : "📄")} {name}");
+                }
                 OutputReceived?.Invoke($"Found {files.Length} mod files/folders");
             }
             catch (Exception ex)
@@ -62,7 +70,19 @@ namespace PulsePanel
         {
             if (_server == null) return;
 
-            OutputReceived?.Invoke("Starting workshop download...");
+            var workshopIds = WorkshopIdsBox.Text.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                .Select(id => id.Trim())
+                .Where(id => !string.IsNullOrEmpty(id) && id.All(char.IsDigit))
+                .ToList();
+
+            if (!workshopIds.Any())
+            {
+                OutputReceived?.Invoke("No valid Workshop IDs found");
+                return;
+            }
+
+            DownloadModsBtn.IsEnabled = false;
+            OutputReceived?.Invoke($"Starting download of {workshopIds.Count} workshop items...");
             
             try
             {
@@ -73,18 +93,64 @@ namespace PulsePanel
                     return;
                 }
 
-                OutputReceived?.Invoke("Workshop download completed");
-                new ToastNotification("Mods Downloaded", "Workshop items downloaded successfully");
+                var successCount = 0;
+                foreach (var workshopId in workshopIds)
+                {
+                    OutputReceived?.Invoke($"Downloading Workshop ID: {workshopId}");
+                    
+                    var args = $"+login anonymous +workshop_download_item {_server.AppId} {workshopId} +quit";
+                    
+                    var process = new Process
+                    {
+                        StartInfo = new ProcessStartInfo
+                        {
+                            FileName = steamCmdPath,
+                            Arguments = args,
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            CreateNoWindow = true
+                        }
+                    };
+
+                    process.OutputDataReceived += (s, e) => {
+                        if (!string.IsNullOrEmpty(e.Data))
+                            OutputReceived?.Invoke($"SteamCMD: {e.Data}");
+                    };
+
+                    process.Start();
+                    process.BeginOutputReadLine();
+                    await process.WaitForExitAsync();
+                    
+                    if (process.ExitCode == 0)
+                    {
+                        successCount++;
+                        OutputReceived?.Invoke($"✓ Downloaded Workshop ID: {workshopId}");
+                    }
+                    else
+                    {
+                        OutputReceived?.Invoke($"✗ Failed to download Workshop ID: {workshopId}");
+                    }
+                }
+
+                OutputReceived?.Invoke($"Workshop download completed: {successCount}/{workshopIds.Count} successful");
+                new ToastNotification("Mods Downloaded", $"{successCount} workshop items downloaded successfully");
+                RefreshModList();
             }
             catch (Exception ex)
             {
                 OutputReceived?.Invoke($"Download failed: {ex.Message}");
             }
+            finally
+            {
+                DownloadModsBtn.IsEnabled = true;
+            }
         }
 
         private void ClearMods_Click(object sender, RoutedEventArgs e)
         {
-            OutputReceived?.Invoke("Cleared mod list");
+            WorkshopIdsBox.Clear();
+            OutputReceived?.Invoke("Cleared workshop ID list");
         }
 
         private void RefreshMods_Click(object sender, RoutedEventArgs e)
@@ -104,11 +170,63 @@ namespace PulsePanel
             }
         }
 
-        private void ValidateMods_Click(object sender, RoutedEventArgs e)
+        private async void ValidateMods_Click(object sender, RoutedEventArgs e)
         {
             if (_server == null) return;
+            
+            ValidateModsBtn.IsEnabled = false;
             OutputReceived?.Invoke("Validating mods...");
-            new ToastNotification("Validation Complete", "Mod validation completed");
+            
+            try
+            {
+                var steamCmdPath = @"C:\steamcmd\steamcmd.exe";
+                if (!File.Exists(steamCmdPath))
+                {
+                    OutputReceived?.Invoke("SteamCMD not found for validation");
+                    return;
+                }
+
+                var args = $"+force_install_dir \"{_server.InstallPath}\" +login anonymous +app_update {_server.AppId} validate +quit";
+                
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = steamCmdPath,
+                        Arguments = args,
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    }
+                };
+
+                process.OutputDataReceived += (s, e) => {
+                    if (!string.IsNullOrEmpty(e.Data))
+                        OutputReceived?.Invoke($"Validation: {e.Data}");
+                };
+
+                process.Start();
+                process.BeginOutputReadLine();
+                await process.WaitForExitAsync();
+                
+                if (process.ExitCode == 0)
+                {
+                    OutputReceived?.Invoke("✓ Mod validation completed successfully");
+                    new ToastNotification("Validation Complete", "Mod validation completed successfully");
+                }
+                else
+                {
+                    OutputReceived?.Invoke("✗ Mod validation failed");
+                }
+            }
+            catch (Exception ex)
+            {
+                OutputReceived?.Invoke($"Validation error: {ex.Message}");
+            }
+            finally
+            {
+                ValidateModsBtn.IsEnabled = true;
+            }
         }
     }
 }

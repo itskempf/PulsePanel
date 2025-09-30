@@ -64,6 +64,79 @@ namespace PulsePanel
             }
         }
 
+        public static async Task<bool> IsPortInUse(int port)
+        {
+            try
+            {
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "netstat",
+                        Arguments = "-an",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    }
+                };
+
+                process.Start();
+                var output = await process.StandardOutput.ReadToEndAsync();
+                await process.WaitForExitAsync();
+                
+                return output.Contains($":{port} ") || output.Contains($":{port}\t");
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static async Task<List<int>> GetUsedPorts()
+        {
+            var usedPorts = new List<int>();
+            
+            try
+            {
+                var process = new Process
+                {
+                    StartInfo = new ProcessStartInfo
+                    {
+                        FileName = "netstat",
+                        Arguments = "-an",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    }
+                };
+
+                process.Start();
+                var output = await process.StandardOutput.ReadToEndAsync();
+                await process.WaitForExitAsync();
+                
+                var lines = output.Split('\n');
+                foreach (var line in lines)
+                {
+                    if (line.Contains(":") && (line.Contains("LISTENING") || line.Contains("UDP")))
+                    {
+                        var parts = line.Split(new[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (parts.Length > 1)
+                        {
+                            var address = parts[1];
+                            var portIndex = address.LastIndexOf(':');
+                            if (portIndex > 0 && int.TryParse(address.Substring(portIndex + 1), out int port))
+                            {
+                                usedPorts.Add(port);
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+            
+            return usedPorts.Distinct().ToList();
+        }
+
         private static async Task<bool> RunNetshCommand(string arguments)
         {
             try
