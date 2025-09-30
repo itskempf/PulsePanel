@@ -200,6 +200,7 @@
                             <Button Name="ConfigTab" Content="⚙️ Config" Click="Tab_Click" Tag="Config" Style="{StaticResource TabButton}"/>
                             <Button Name="ModsTab" Content="🔧 Mods" Click="Tab_Click" Tag="Mods" Style="{StaticResource TabButton}"/>
                             <Button Name="ScheduleTab" Content="⏰ Schedule" Click="Tab_Click" Tag="Schedule" Style="{StaticResource TabButton}"/>
+                            <Button Name="DockerTab" Content="🐳 Docker" Click="Tab_Click" Tag="Docker" Style="{StaticResource TabButton}"/>
                         </StackPanel>
                     </Border>
                     

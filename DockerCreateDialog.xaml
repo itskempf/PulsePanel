@@ -1,0 +1,70 @@
+<Window x:Class="PulsePanel.DockerCreateDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Create Docker Container" Height="500" Width="600"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <TextBlock Grid.Row="0" Text="🐳 Create New Docker Container" 
+                   FontSize="18" FontWeight="Bold" Margin="0,0,0,20"/>
+        
+        <!-- Basic Settings -->
+        <Grid Grid.Row="1" Margin="0,0,0,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Game Type:" VerticalAlignment="Center" Margin="0,0,0,10"/>
+            <ComboBox Name="GameTypeCombo" Grid.Row="0" Grid.Column="1" Height="30" Margin="0,0,0,10"
+                      SelectionChanged="GameTypeCombo_SelectionChanged"/>
+            
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Container Name:" VerticalAlignment="Center" Margin="0,0,0,10"/>
+            <TextBox Name="ContainerNameBox" Grid.Row="1" Grid.Column="1" Height="30" Margin="0,0,0,10"/>
+            
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="Docker Image:" VerticalAlignment="Center"/>
+            <TextBox Name="DockerImageBox" Grid.Row="2" Grid.Column="1" Height="30" IsReadOnly="True" 
+                     Background="#F5F5F5"/>
+        </Grid>
+        
+        <!-- Settings -->
+        <Border Grid.Row="2" BorderBrush="#E1E5E9" BorderThickness="1" CornerRadius="8">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <Border Grid.Row="0" Background="#F8F9FA" CornerRadius="8,8,0,0" Padding="12,8">
+                    <TextBlock Text="⚙️ Configuration Settings" FontWeight="Bold"/>
+                </Border>
+                
+                <ScrollViewer Grid.Row="1" Margin="12">
+                    <StackPanel Name="SettingsPanel"/>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+        
+        <!-- Buttons -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Name="CreateBtn" Content="Create Container" Click="Create_Click" 
+                    Background="#27AE60" Foreground="White" Padding="20,8" Margin="0,0,10,0"
+                    BorderThickness="0" Cursor="Hand"/>
+            <Button Name="CancelBtn" Content="Cancel" Click="Cancel_Click" 
+                    Background="#95A5A6" Foreground="White" Padding="20,8"
+                    BorderThickness="0" Cursor="Hand"/>
+        </StackPanel>
+    </Grid>
+</Window>

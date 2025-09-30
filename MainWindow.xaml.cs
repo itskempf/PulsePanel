@@ -16,6 +16,7 @@ namespace PulsePanel
         private readonly ConfigTabControl _configTab = new();
         private readonly ModsTabControl _modsTab = new();
         private readonly ScheduleTabControl _scheduleTab = new();
+        private readonly DockerTabControl _dockerTab = new();
         private string _steamCmdPath = @"C:\steamcmd\steamcmd.exe";
 
         public MainWindow()
@@ -239,6 +240,9 @@ namespace PulsePanel
                 case "Schedule":
                     _scheduleTab.UpdateServer(_selectedServer);
                     TabContent.Content = _scheduleTab;
+                    break;
+                case "Docker":
+                    TabContent.Content = _dockerTab;
                     break;
             }
         }
